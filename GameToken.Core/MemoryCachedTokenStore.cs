@@ -39,4 +39,13 @@ internal class MemoryCachedTokenStore : ITokenStore
 
 		return tokenInfo;
 	}
+
+	public async ValueTask DeleteTokenAsync(string id)
+	{
+		var key = $"Tgs:GameToken:{id}";
+
+		await _sourceTokenStore.DeleteTokenAsync(id).ConfigureAwait(false);
+
+		_memoryCache.Remove(key);
+	}
 }

@@ -66,4 +66,13 @@ internal class RedisTokenStore : ITokenStore
 			? null
 			: new GameTokenInfo(token.Id, token.PlayerCode, token.CreatedDate, true);
 	}
+
+	public async ValueTask DeleteTokenAsync(string id)
+	{
+		await _sourceTokenStore.DeleteTokenAsync(id).ConfigureAwait(false);
+
+		var key = $"Tgs:GameToken:{id}";
+
+		_ = await _redisDatabase.KeyDeleteAsync(key).ConfigureAwait(false);
+	}
 }

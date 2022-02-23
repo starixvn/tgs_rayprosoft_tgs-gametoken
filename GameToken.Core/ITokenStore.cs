@@ -5,4 +5,6 @@ public interface ITokenStore
 	ValueTask CreateTokenAsync(Token token);
 
 	ValueTask<GameTokenInfo?> GetTokenAsync(string id);
+
+	ValueTask DeleteTokenAsync(string id);
 }

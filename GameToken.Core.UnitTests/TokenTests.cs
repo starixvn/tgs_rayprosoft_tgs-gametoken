@@ -59,4 +59,19 @@ public class TokenTests
 
 		Assert.IsNull(actual);
 	}
+
+	[TestMethod]
+	public async Task DeleteToken()
+	{
+		var fakeTokenStore = Substitute.For<ITokenStore>();
+
+		var sut = new DeleteTokenCommandService(fakeTokenStore);
+
+		var command = new DeleteTokenCommand("test");
+
+		await sut.ExecuteAsync(command);
+
+		_ = fakeTokenStore.Received(1)
+			.DeleteTokenAsync(Arg.Is(command.Id));
+	}
 }

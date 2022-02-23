@@ -104,4 +104,25 @@ public class RedisTokenStoreTests
 
 		Assert.IsNull(actual);
 	}
+
+	[TestMethod]
+	public async Task Delete_Token()
+	{
+		var fakeSourceTokenStore = Substitute.For<ITokenStore>();
+		var fakeRedisDatabase = Substitute.For<IDatabase>();
+
+		var sut = new RedisTokenStore(
+			fakeSourceTokenStore,
+			TimeSpan.FromHours(1),
+			fakeRedisDatabase,
+			NullLogger<RedisTokenStore>.Instance);
+
+		await sut.DeleteTokenAsync("test");
+
+		_ = fakeSourceTokenStore.Received(1)
+			.DeleteTokenAsync(Arg.Is("test"));
+
+		_ = fakeRedisDatabase.Received(1)
+			.KeyDeleteAsync(Arg.Is<RedisKey>("Tgs:GameToken:test"));
+	}
 }

@@ -78,4 +78,29 @@ public class MemoryCachedTokenStoreTests
 				&& t.PlayerCode == token.PlayerCode
 				&& t.CreatedDate == token.CreatedDate));
 	}
+
+	[TestMethod]
+	public async Task Delete_Token()
+	{
+		var fakeSourceTokenStore = Substitute.For<ITokenStore>();
+		var fakeMemoryCache = new MemoryCache(new OptionsWrapper<MemoryCacheOptions>(new MemoryCacheOptions()));
+
+		var sut = new MemoryCachedTokenStore(
+			fakeSourceTokenStore,
+			TimeSpan.FromMinutes(5),
+			fakeMemoryCache);
+
+		var key = "Tgs:GameToken:test";
+		var entry = fakeMemoryCache.CreateEntry(key);
+		entry.SetValue(null);
+		entry.Dispose();
+
+		Assert.IsTrue(fakeMemoryCache.TryGetValue(key, out _));
+
+		await sut.DeleteTokenAsync("test");
+
+		_ = fakeSourceTokenStore.Received(1)
+			.DeleteTokenAsync(Arg.Is("test"));
+		Assert.IsFalse(fakeMemoryCache.TryGetValue(key, out _));
+	}
 }

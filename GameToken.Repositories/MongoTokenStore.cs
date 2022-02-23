@@ -45,4 +45,6 @@ internal class MongoTokenStore : ITokenStore
 				tokenData.CreatedDate,
 				false);
 	}
+
+	public ValueTask DeleteTokenAsync(string id) => _sourceTokeStore.DeleteTokenAsync(id);
 }

@@ -70,4 +70,11 @@ public class TokenController : ControllerBase
 			PlayerCode = tokenInfo.PlayerCode
 		};
 	}
+
+	[HttpDelete("{id}", Name = "RevokeToken")]
+	[SuccessStatusCode(202, "Revoke accept")]
+	public ValueTask RevokeTokenAsync(
+		[FromServices] ICommandService<DeleteTokenCommand> deleteTokenService,
+		string id)
+		=> deleteTokenService.ExecuteAsync(new DeleteTokenCommand(id));
 }
