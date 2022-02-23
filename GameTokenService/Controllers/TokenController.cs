@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Mime;
+using Microsoft.AspNetCore.Mvc;
 using Tgs.GameToken.ApplicationServices;
 using Tgs.GameToken.ViewModels;
 using Tgs.ServiceUtility;
@@ -12,12 +13,13 @@ public class TokenController : ControllerBase
 {
 	[HttpPost("{playerCode}", Name = "CreateToken")]
 	[SuccessStatusCode(201, "Token created")]
+	[Produces(MediaTypeNames.Application.Json)]
 	public ValueTask<string> CreateTokenAsync(
 		[FromServices] IGetService<CreateTokenCommand, string> createTokenService,
 		string playerCode)
 		=> createTokenService.GetAsync(new CreateTokenCommand(playerCode));
 
-	[HttpHead("{id}")]
+	[HttpHead("{id}", Name = "CheckTokenValid")]
 	[SuccessStatusCode(200, "Token valid")]
 	[FailStatusCode(404, "Token not found")]
 	[FailStatusCode(406, "Token invalid")]
@@ -42,7 +44,7 @@ public class TokenController : ControllerBase
 		}
 	}
 
-	[HttpGet("{id}")]
+	[HttpGet("{id}", Name = "GetTokenInfo")]
 	[SuccessStatusCode(200, "Token found")]
 	[FailStatusCode(404, "Token not found")]
 	public async Task<GameTokenViewModel?> GetTokenAsync(

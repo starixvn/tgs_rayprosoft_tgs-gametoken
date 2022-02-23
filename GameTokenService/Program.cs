@@ -1,10 +1,15 @@
+using Microsoft.AspNetCore.Mvc;
 using Tgs.GameToken;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
 	.AddRouting(options => options.LowercaseUrls = true)
-	.AddControllers();
+	.AddControllers()
+	.AddMvcOptions(options =>
+	{
+		options.AddWebApiToolkitFilters();
+	});
 
 builder.Services
 	.AddMemoryCache()
@@ -43,6 +48,7 @@ builder.Services
 			});
 
 		options.ApplyWebApiToolkitSupport();
+		options.ApplyDisplayNameSchemaId();
 	});
 var app = builder.Build();
 

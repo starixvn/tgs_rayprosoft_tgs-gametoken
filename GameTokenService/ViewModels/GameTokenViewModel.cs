@@ -1,5 +1,8 @@
-﻿namespace Tgs.GameToken.ViewModels;
+﻿using System.ComponentModel;
 
+namespace Tgs.GameToken.ViewModels;
+
+[DisplayName("GameToken")]
 public class GameTokenViewModel
 {
 	public string Id { get; init; } = default!;
