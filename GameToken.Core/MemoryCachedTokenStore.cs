@@ -22,7 +22,7 @@ internal class MemoryCachedTokenStore : ITokenStore
 	{
 		var key = $"Tgs:GameToken:{id}";
 
-		return await _memoryCache.GetOrCreateAsync(key, async cacheEntry =>
+		var tokenInfo = await _memoryCache.GetOrCreateAsync(key, async cacheEntry =>
 		{
 			var token = await _sourceTokenStore.GetTokenAsync(id).ConfigureAwait(false);
 
@@ -33,5 +33,10 @@ internal class MemoryCachedTokenStore : ITokenStore
 
 			return token;
 		}).ConfigureAwait(false);
+
+		if (tokenInfo is not null && tokenInfo.IsValid)
+			_ = _sourceTokenStore.GetTokenAsync(id);
+
+		return tokenInfo;
 	}
 }
