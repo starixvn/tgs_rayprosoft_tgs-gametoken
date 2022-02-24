@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+option csharp_namespace = "Tgs.GameToken.Protos";
+
+message RevokeRequest {
+	string id = 1;
+}

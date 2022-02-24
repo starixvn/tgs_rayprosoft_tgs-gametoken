@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Tgs.GameToken;
+using Tgs.GameToken.MessageQueue;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,21 @@ builder.Services
 			})
 			.SetMongoDbTokenStore(sp => sp.GetRequiredService<MongoConnectionManager>().Database);
 	});
+
+builder.Services
+	.AddMessageQueue()
+	.AddNatsMessageQueue(natsConfig =>
+	{
+		natsConfig
+			.ConfigQueueOptions((options, sp) =>
+			{
+				var config = sp.GetRequiredService<IConfiguration>();
+
+				options.Url = config.GetConnectionString("Nats");
+			})
+			.AddHandler<RevokeTokenHandler>("tgs.game-token.revoke");
+	})
+	.AddNatsGlobPatternExchange("*");
 
 builder.Services
 	.AddSwaggerGen(options =>

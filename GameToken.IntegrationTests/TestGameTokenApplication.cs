@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GameToken.IntegrationTests;
 
@@ -15,5 +15,12 @@ internal class TestGameTokenApplication : WebApplicationFactory<Program>
 	}
 
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
-		=> _webHostConfigure?.Invoke(builder);
+	{
+		builder.ConfigureServices(services =>
+		{
+			services.AddFakeNatsMessageQueue();
+		});
+
+		_webHostConfigure?.Invoke(builder);
+	}
 }

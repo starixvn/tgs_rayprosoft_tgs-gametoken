@@ -1,7 +1,10 @@
 ﻿using System.Net.Mime;
+using Google.Protobuf;
 using Microsoft.AspNetCore.Mvc;
 using Tgs.GameToken.ApplicationServices;
+using Tgs.GameToken.Protos;
 using Tgs.GameToken.ViewModels;
+using Tgs.MessageQueue;
 using Tgs.ServiceUtility;
 using Tgs.WebApi.Toolkits;
 
@@ -29,7 +32,9 @@ public class TokenController : ControllerBase
 	{
 		var query = new GetTokenQuery(id);
 
-		var tokenInfo = await getTokenService.GetAsync(query).ConfigureAwait(false);
+		var tokenInfo = await getTokenService
+			.GetAsync(query, HttpContext.RequestAborted)
+			.ConfigureAwait(false);
 
 		if (tokenInfo is null)
 		{
@@ -53,7 +58,9 @@ public class TokenController : ControllerBase
 	{
 		var query = new GetTokenQuery(id);
 
-		var tokenInfo = await getTokenService.GetAsync(query).ConfigureAwait(false);
+		var tokenInfo = await getTokenService
+			.GetAsync(query, HttpContext.RequestAborted)
+			.ConfigureAwait(false);
 
 		if (tokenInfo is null)
 		{
@@ -74,7 +81,17 @@ public class TokenController : ControllerBase
 	[HttpDelete("{id}", Name = "RevokeToken")]
 	[SuccessStatusCode(202, "Revoke accept")]
 	public ValueTask RevokeTokenAsync(
-		[FromServices] ICommandService<DeleteTokenCommand> deleteTokenService,
+		[FromServices] IMessageSender messageSender,
 		string id)
-		=> deleteTokenService.ExecuteAsync(new DeleteTokenCommand(id));
+	{
+		var request = new RevokeRequest
+		{
+			Id = id
+		};
+
+		return messageSender.SendAsync(
+			"tgs.game-token.revoke",
+			request.ToByteArray(),
+			HttpContext.RequestAborted);
+	}
 }

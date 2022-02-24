@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using ExpectedObjects;
-using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using Tgs.GameToken;
 using Tgs.GameToken.Clients;
+using Tgs.GameToken.MessageQueue;
+using Tgs.MessageQueue;
 
 namespace GameToken.IntegrationTests;
 
@@ -125,5 +127,53 @@ public class TokenTests
 		var actual = await sut.GetTokenInfoAsync(token, default);
 
 		expected.ToExpectedObject().ShouldMatch(actual);
+	}
+
+	[TestMethod]
+	public async Task Revoke_Token()
+	{
+		var token = "test";
+		var fakeTokenStore = Substitute.For<ITokenStore>();
+
+		await using var web = new TestGameTokenApplication(hostBuilder =>
+		{
+			hostBuilder.ConfigureServices(services =>
+			{
+				services.AddSingleton(fakeTokenStore);
+
+				_ = services.AddSingleton(sp =>
+				{
+					var fakeMessageSender = Substitute.For<IMessageSender>();
+
+					fakeMessageSender.SendAsync(
+						Arg.Is("tgs.game-token.revoke"),
+						Arg.Any<ReadOnlyMemory<byte>>(),
+						Arg.Any<CancellationToken>())
+						.Returns(callInfo =>
+						{
+							var data = callInfo.Arg<ReadOnlyMemory<byte>>();
+							var ct = callInfo.Arg<CancellationToken>();
+
+							var handler = ActivatorUtilities.CreateInstance<RevokeTokenHandler>(sp);
+
+							return handler.HandleAsync(data, ct);
+						});
+
+					return fakeMessageSender;
+				});
+			});
+		});
+
+		var httpClient = web.CreateClient();
+
+		var sut = new GameTokenClient(httpClient);
+
+		var cts = new CancellationTokenSource();
+		cts.CancelAfter(3000);
+
+		await sut.RevokeTokenAsync(token, cts.Token);
+
+		_ = fakeTokenStore.Received(1)
+			.DeleteTokenAsync(Arg.Is(token));
 	}
 }

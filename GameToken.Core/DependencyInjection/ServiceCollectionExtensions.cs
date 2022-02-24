@@ -24,7 +24,6 @@ public static class ServiceCollectionExtensions
 				return new object[] { TimeSpan.FromHours(1), options.RedisDatabaseResolver(sp) };
 			})
 			.SetTokenStore<MemoryCachedTokenStore>(sp => new object[] { TimeSpan.FromHours(1) });
-
 		return services
 			.RegisterAllServiceUtilityTypes(Assembly.GetExecutingAssembly(), ServiceLifetime.Transient)
 			.AddSingleton<NoopTokenStore>()

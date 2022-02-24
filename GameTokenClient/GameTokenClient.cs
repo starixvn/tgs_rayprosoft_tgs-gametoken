@@ -20,7 +20,7 @@ internal class GameTokenClient
 		_httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 	}
 
-	public async Task<string> CreateTokenAsync(string playerCode, CancellationToken cancellationToken)
+	public async ValueTask<string> CreateTokenAsync(string playerCode, CancellationToken cancellationToken)
 	{
 		var response = await _httpClient
 			.PostAsync(
@@ -44,7 +44,7 @@ internal class GameTokenClient
 		}
 	}
 
-	public async Task<GameTokenInfo?> GetTokenInfoAsync(string token, CancellationToken cancellationToken)
+	public async ValueTask<GameTokenInfo?> GetTokenInfoAsync(string token, CancellationToken cancellationToken)
 	{
 		var response = await _httpClient
 			.GetAsync($"/token/{token}", cancellationToken)
@@ -68,7 +68,7 @@ internal class GameTokenClient
 		}
 	}
 
-	public async Task<bool> CheckTokenValidAsync(string token, CancellationToken cancellationToken)
+	public async ValueTask<bool> CheckTokenValidAsync(string token, CancellationToken cancellationToken)
 	{
 		var requestMessage = new HttpRequestMessage(HttpMethod.Head, $"/token/{token}");
 		requestMessage.Content = new StringContent(string.Empty, Encoding.UTF8, MediaTypeNames.Application.Json);
@@ -84,5 +84,15 @@ internal class GameTokenClient
 			HttpStatusCode.NotAcceptable => false,
 			_ => throw new GameTokenApiException("Unknown error")
 		};
+	}
+
+	public async ValueTask RevokeTokenAsync(string token, CancellationToken cancellationToken)
+	{
+		var response = await _httpClient
+			.DeleteAsync($"/token/{token}", cancellationToken)
+			.ConfigureAwait(false);
+
+		if (response.StatusCode is not HttpStatusCode.Accepted)
+			throw new GameTokenApiException("Unknown error");
 	}
 }
