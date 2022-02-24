@@ -5,6 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Tgs.GameToken.Clients</RootNamespace>
+    <Version>0.0.1-alpha</Version>
+    <Authors>Raypro</Authors>
+    <PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-gametoken</PackageProjectUrl>
+    <RepositoryUrl>https://gitlab.com/rayprosoft/tgs-gametoken.git</RepositoryUrl>
+    <PackageTags>Tgs Game Token</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
