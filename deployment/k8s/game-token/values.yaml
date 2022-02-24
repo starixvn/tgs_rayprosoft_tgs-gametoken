@@ -12,8 +12,8 @@ image:
 
 imagePullSecrets:
   - name: secret-tgs-harbor
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "game-token"
+fullnameOverride: "game-token"
 
 serviceAccount:
   # Specifies whether a service account should be created

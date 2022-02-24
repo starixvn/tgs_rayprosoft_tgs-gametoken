@@ -108,7 +108,7 @@ pipeline {
                         println node_selector
 
                         sh """
-                            cat << EOF | yq e -P | helm template Deployment/k8s/game-token \
+                            cat << EOF | yq e -P | helm template deployment/k8s/game-token \
                                 --set image.tag=${TAG} \
                                 -f -
                             {
@@ -118,7 +118,7 @@ pipeline {
                             }
                         """
                         sh """
-                            cat << EOF | yq e -P | helm template Deployment/k8s/game-token \
+                            cat << EOF | yq e -P | helm template deployment/k8s/game-token \
                                 --set image.tag=${TAG} \
                                 -f - \
                                 | kubectl -n ${kube_ns} apply -f -
