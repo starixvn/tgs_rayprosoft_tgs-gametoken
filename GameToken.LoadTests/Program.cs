@@ -55,4 +55,4 @@ var validTokenScenario = ScenarioBuilder.CreateScenario("Valid Game Token", init
 	.WithoutWarmUp()
 	.WithLoadSimulations(Simulation.InjectPerSec(300, TimeSpan.FromSeconds(30)));
 
-NBomberRunner.RegisterScenarios(validTokenScenario).Run();
+NBomberRunner.RegisterScenarios(createTokenScenario).Run();
