@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Tgs.GameToken.Clients;
 
-internal class GameTokenClient
+internal class GameTokenClient : IGameTokenClient
 {
 	private static readonly JsonSerializerOptions _SerializerOptions = new()
 	{
