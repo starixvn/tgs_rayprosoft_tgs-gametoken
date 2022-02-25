@@ -114,7 +114,21 @@ pipeline {
                             {
                                 "nodeSelector": $node_selector,
                                 "tolerations": [$dedicated],
-                                "resources": $resources
+                                "resources": $resources,
+                                "ingress":{
+                                    "enabled": true,
+                                    "hosts": [
+                                        {
+                                            "host": "game-token.rpgp.cc",
+                                            "paths": [
+                                                {
+                                                    "path": "/",
+                                                    "pathType": "Prefix"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
                             }
                         """
                         sh """
@@ -125,7 +139,21 @@ pipeline {
                             {
                                 "nodeSelector": $node_selector,
                                 "tolerations": [$dedicated],
-                                "resources": $resources
+                                "resources": $resources,
+                                "ingress":{
+                                    "enabled": true,
+                                    "hosts": [
+                                        {
+                                            "host": "game-token.rpgp.cc",
+                                            "paths": [
+                                                {
+                                                    "path": "/",
+                                                    "pathType": "Prefix"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
                             }
                         """
                     }
