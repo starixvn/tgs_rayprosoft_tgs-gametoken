@@ -108,36 +108,54 @@ pipeline {
                         println node_selector
 
                         sh """
-                            cat << EOF | yq e -P | helm template Deployment/k8s/sms-api \
+                            cat << EOF | yq e -P | helm template deployment/k8s/game-token \
+                                -n ${kube_ns} \
                                 --set image.tag=${TAG} \
-                                --set namespace=${kube_ns} \
-                                --set connectionStrings.tgs="$tgs_tgs" \
-                                --set rabbit.url="$tgs_rabbit_url" \
-                                --set rabbit.user="$tgs_rabbit_user" \
-                                --set rabbit.password="$tgs_rabbit_pass" \
-                                --set rabbit.vhost="$tgs_rabbit_vhost" \
                                 -f -
                             {
                                 "nodeSelector": $node_selector,
                                 "tolerations": [$dedicated],
-                                "resources": $resources
+                                "resources": $resources,
+                                "ingress":{
+                                    "enabled": true,
+                                    "hosts": [
+                                        {
+                                            "host": "game-token.rpgp.cc",
+                                            "paths": [
+                                                {
+                                                    "path": "/",
+                                                    "pathType": "Prefix"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
                             }
                         """
                         sh """
-                            cat << EOF | yq e -P | helm template Deployment/k8s/sms-api \
+                            cat << EOF | yq e -P | helm template deployment/k8s/game-token \
+                                -n ${kube_ns} \
                                 --set image.tag=${TAG} \
-                                --set namespace=${kube_ns} \
-                                --set connectionStrings.tgs="$tgs_tgs" \
-                                --set rabbit.url="$tgs_rabbit_url" \
-                                --set rabbit.user="$tgs_rabbit_user" \
-                                --set rabbit.password="$tgs_rabbit_pass" \
-                                --set rabbit.vhost="$tgs_rabbit_vhost" \
                                 -f - \
                                 | kubectl -n ${kube_ns} apply -f -
                             {
                                 "nodeSelector": $node_selector,
                                 "tolerations": [$dedicated],
-                                "resources": $resources
+                                "resources": $resources,
+                                "ingress":{
+                                    "enabled": true,
+                                    "hosts": [
+                                        {
+                                            "host": "game-token.rpgp.cc",
+                                            "paths": [
+                                                {
+                                                    "path": "/",
+                                                    "pathType": "Prefix"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
                             }
                         """
                     }

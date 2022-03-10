@@ -2,6 +2,11 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using NSubstitute;
+using OpenTelemetry.Exporter;
+using StackExchange.Redis;
+using Tgs.GameToken;
 
 namespace GameToken.IntegrationTests;
 
@@ -18,7 +23,17 @@ internal class TestGameTokenApplication : WebApplicationFactory<Program>
 	{
 		builder.ConfigureServices(services =>
 		{
-			services.AddFakeNatsMessageQueue();
+			_ = services
+				.AddFakeNatsMessageQueue()
+				.AddSingleton<IConfigureOptions<OtlpExporterOptions>>(
+					sp => new ConfigureNamedOptions<OtlpExporterOptions>(
+						Options.DefaultName,
+						exporterOptions =>
+						{
+							exporterOptions.Endpoint = null;
+						}))
+				.AddSingleton<ITokenStore>(Substitute.For<ITokenStore>());
+			;
 		});
 
 		_webHostConfigure?.Invoke(builder);

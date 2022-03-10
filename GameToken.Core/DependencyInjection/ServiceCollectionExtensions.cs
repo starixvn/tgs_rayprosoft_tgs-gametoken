@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Tgs.GameToken;
 using Tgs.GameToken.Configuration;
@@ -23,7 +22,7 @@ public static class ServiceCollectionExtensions
 
 				return new object[] { TimeSpan.FromHours(1), options.RedisDatabaseResolver(sp) };
 			})
-			.SetTokenStore<MemoryCachedTokenStore>(sp => new object[] { TimeSpan.FromHours(1) });
+			.SetTokenStore<MemoryCachedTokenStore>(sp => new object[] { TimeSpan.FromMinutes(5) });
 		return services
 			.RegisterAllServiceUtilityTypes(Assembly.GetExecutingAssembly(), ServiceLifetime.Transient)
 			.AddSingleton<NoopTokenStore>()

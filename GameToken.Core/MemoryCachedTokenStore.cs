@@ -26,10 +26,7 @@ internal class MemoryCachedTokenStore : ITokenStore
 		{
 			var token = await _sourceTokenStore.GetTokenAsync(id).ConfigureAwait(false);
 
-			if (token == null)
-				cacheEntry.SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
-			else
-				cacheEntry.SetSlidingExpiration(_expiry);
+			cacheEntry.SetAbsoluteExpiration(_expiry);
 
 			return token;
 		}).ConfigureAwait(false);
