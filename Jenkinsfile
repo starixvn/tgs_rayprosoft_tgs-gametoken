@@ -19,14 +19,17 @@ pipeline {
                         case ['origin/main','main']:
                             env.kube_ns = "prod";
                             env.k8s_config = 'stag-k8s-config';
+                            env.ingress_enabled = "false";
                             break;
                         case ['origin/release','release']:
                             env.kube_ns = "staging";
                             env.k8s_config = 'stag-k8s-config';
+                            env.ingress_enabled = "false";
                             break;
                         default:
                             env.kube_ns = "dev";
-                            env.k8s_config = 'k8s-kube-config' 
+                            env.k8s_config = 'k8s-kube-config';
+                            env.ingress_enabled = "true";
                             break;
                     }
                 }
@@ -117,7 +120,7 @@ pipeline {
                                 "tolerations": [$dedicated],
                                 "resources": $resources,
                                 "ingress":{
-                                    "enabled": true,
+                                    "enabled": $ingress_enabled,
                                     "hosts": [
                                         {
                                             "host": "game-token.rpgp.cc",
@@ -143,7 +146,7 @@ pipeline {
                                 "tolerations": [$dedicated],
                                 "resources": $resources,
                                 "ingress":{
-                                    "enabled": true,
+                                    "enabled": $ingress_enabled,
                                     "hosts": [
                                         {
                                             "host": "game-token.rpgp.cc",
