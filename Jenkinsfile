@@ -6,7 +6,7 @@ pipeline {
 	
 	environment {
 		BuildConfiguration = 'Debug'
-		ImageName = "harbor.rpgp.cc/tgs/game-token"
+		ImageName = "pgtgs/game-token"
 	}
 
 	stages {
