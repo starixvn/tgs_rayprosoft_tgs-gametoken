@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using OpenTelemetry.Exporter;
-using StackExchange.Redis;
 using Tgs.GameToken;
 
 namespace GameToken.IntegrationTests;

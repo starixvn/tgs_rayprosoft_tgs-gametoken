@@ -1,3 +1,3 @@
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("GameToken.IntegrationTests")] 
+[assembly: InternalsVisibleTo("GameToken.IntegrationTests")]
