@@ -19,8 +19,11 @@ public class TokenController : ControllerBase
 	[Produces(MediaTypeNames.Application.Json)]
 	public ValueTask<string> CreateTokenAsync(
 		[FromServices] IGetService<CreateTokenCommand, string> createTokenService,
-		string playerCode)
-		=> createTokenService.GetAsync(new CreateTokenCommand(playerCode));
+		string playerCode,
+		[FromBody] CreateTokenViewModel model)
+		=> createTokenService.GetAsync(new CreateTokenCommand(
+			playerCode,
+			model.Info));
 
 	[HttpHead("{id}", Name = "CheckTokenValid")]
 	[SuccessStatusCode(200, "Token valid")]
@@ -72,9 +75,10 @@ public class TokenController : ControllerBase
 		return new GameTokenViewModel
 		{
 			Id = tokenInfo.Id,
+			PlayerCode = tokenInfo.PlayerCode,
+			Info = tokenInfo.Info,
 			CreatedDate = tokenInfo.CreatedDate,
-			IsValid = tokenInfo.IsValid,
-			PlayerCode = tokenInfo.PlayerCode
+			IsValid = tokenInfo.IsValid
 		};
 	}
 

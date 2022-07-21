@@ -24,7 +24,19 @@ public class RedisTokenStoreTests
 			fakeRedisDatabase,
 			NullLogger<RedisTokenStore>.Instance);
 
-		var token = new Token("id", "Player1", DateTime.UtcNow);
+		var token = new Token(
+			   "id",
+				 "Player1",
+				 JsonSerializer.Serialize(new
+				 {
+					 uid = 1,
+					 nickname = "Player1",
+					 currency = "IDN",
+					 table = "B",
+					 language = "id",
+					 clientIP = "127.0.0.1"
+				 }),
+				 DateTime.UtcNow);
 
 		await sut.CreateTokenAsync(token);
 
@@ -33,8 +45,7 @@ public class RedisTokenStoreTests
 				Arg.Is<RedisKey>($"Tgs:GameToken:{token.Id}"),
 				Arg.Any<RedisValue>(),
 				Arg.Is(TimeSpan.FromHours(1)),
-				Arg.Is(When.NotExists),
-				Arg.Any<CommandFlags>());
+				Arg.Is(When.NotExists));
 	}
 
 	[TestMethod]
@@ -49,7 +60,19 @@ public class RedisTokenStoreTests
 			fakeRedisDatabase,
 			NullLogger<RedisTokenStore>.Instance);
 
-		var token = new Token("id", "Player1", DateTime.UtcNow);
+		var token = new Token(
+			   "id",
+				 "Player1",
+				 JsonSerializer.Serialize(new
+				 {
+					 uid = 1,
+					 nickname = "Player1",
+					 currency = "IDN",
+					 table = "B",
+					 language = "id",
+					 clientIP = "127.0.0.1"
+				 }),
+				 DateTime.UtcNow);
 
 		fakeRedisDatabase
 			.StringGetAsync(Arg.Is<RedisKey>($"Tgs:GameToken:{token.Id}"), Arg.Any<CommandFlags>())

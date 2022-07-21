@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ExpectedObjects;
@@ -24,7 +25,17 @@ public class TokenTests
 
 		var sut = new GameTokenClient(httpClient);
 
-		var actual = await sut.CreateTokenAsync("player1", default);
+		var info = JsonSerializer.Serialize(new
+		{
+			uid = 1,
+			nickname = "Player1",
+			currency = "IDN",
+			table = "B",
+			language = "id",
+			clientIP = "127.0.0.1"
+		});
+
+		var actual = await sut.CreateTokenAsync("player1", info, default);
 
 		Assert.IsFalse(string.IsNullOrWhiteSpace(actual));
 	}
@@ -44,6 +55,15 @@ public class TokenTests
 					.Returns(new Tgs.GameToken.GameTokenInfo(
 						token,
 						"Player1",
+						JsonSerializer.Serialize(new
+						{
+							uid = 1,
+							nickname = "Player1",
+							currency = "IDN",
+							table = "B",
+							language = "id",
+							clientIP = "127.0.0.1"
+						}),
 						DateTime.UtcNow,
 						true));
 
@@ -75,6 +95,15 @@ public class TokenTests
 					.Returns(new Tgs.GameToken.GameTokenInfo(
 						token,
 						"Player1",
+						JsonSerializer.Serialize(new
+						{
+							uid = 1,
+							nickname = "Player1",
+							currency = "IDN",
+							table = "B",
+							language = "id",
+							clientIP = "127.0.0.1"
+						}),
 						DateTime.UtcNow,
 						false));
 
@@ -99,6 +128,15 @@ public class TokenTests
 		{
 			Id = token,
 			PlayerCode = "Player1",
+			Info = JsonSerializer.Serialize(new
+			{
+				uid = 1,
+				nickname = "Player1",
+				currency = "IDN",
+				table = "B",
+				language = "id",
+				clientIP = "127.0.0.1"
+			}),
 			CreatedDate = DateTime.UtcNow,
 			IsValid = true
 		};
@@ -113,6 +151,7 @@ public class TokenTests
 					.Returns(new Tgs.GameToken.GameTokenInfo(
 						expected.Id,
 						expected.PlayerCode,
+						expected.Info,
 						expected.CreatedDate,
 						expected.IsValid));
 

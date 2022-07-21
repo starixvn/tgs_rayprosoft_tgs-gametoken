@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -22,7 +23,20 @@ public class MemoryCachedTokenStoreTests
 			TimeSpan.FromMinutes(5),
 			fakeMemoryCache);
 
-		var token = new GameTokenInfo("id", "Player1", DateTime.UtcNow, true);
+		var token = new GameTokenInfo(
+			   "id",
+				 "Player1",
+				 JsonSerializer.Serialize(new
+				 {
+					 uid = 1,
+					 nickname = "Player1",
+					 currency = "IDN",
+					 table = "B",
+					 language = "id",
+					 clientIP = "127.0.0.1"
+				 }),
+				 DateTime.UtcNow,
+				 true);
 		fakeMemoryCache.Set($"Tgs:GameToken:id", token);
 
 		var actual = await sut.GetTokenAsync("id");
@@ -45,7 +59,20 @@ public class MemoryCachedTokenStoreTests
 			TimeSpan.FromMinutes(5),
 			fakeMemoryCache);
 
-		var token = new GameTokenInfo("id", "Player1", DateTime.UtcNow, true);
+		var token = new GameTokenInfo(
+			   "id",
+				 "Player1",
+				 JsonSerializer.Serialize(new
+				 {
+					 uid = 1,
+					 nickname = "Player1",
+					 currency = "IDN",
+					 table = "B",
+					 language = "id",
+					 clientIP = "127.0.0.1"
+				 }),
+				 DateTime.UtcNow,
+				 true);
 		fakeSourceTokenStore.GetTokenAsync(Arg.Is(token.Id))
 			.Returns(token);
 
@@ -69,7 +96,19 @@ public class MemoryCachedTokenStoreTests
 			TimeSpan.FromMinutes(5),
 			fakeMemoryCache);
 
-		var token = new Token("id", "Player1", DateTime.UtcNow);
+		var token = new Token(
+			   "id",
+				 "Player1",
+				 JsonSerializer.Serialize(new
+				 {
+					 uid = 1,
+					 nickname = "Player1",
+					 currency = "IDN",
+					 table = "B",
+					 language = "id",
+					 clientIP = "127.0.0.1"
+				 }),
+				 DateTime.UtcNow);
 
 		await sut.CreateTokenAsync(token);
 

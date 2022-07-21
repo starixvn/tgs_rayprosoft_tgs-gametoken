@@ -1,3 +1,8 @@
 ﻿namespace Tgs.GameToken;
 
-public record GameTokenInfo(string Id, string PlayerCode, DateTime CreatedDate, bool IsValid);
+public record GameTokenInfo(
+	string Id,
+	string PlayerCode,
+	string Info,
+	DateTime CreatedDate,
+	bool IsValid);

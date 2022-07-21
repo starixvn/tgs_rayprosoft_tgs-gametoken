@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NBomber.Contracts;
@@ -30,7 +31,17 @@ var createTokenStep = Step.Create("Create Token", async context =>
 {
 	var client = context.Data.GetValueOrDefault("client") as IGameTokenClient;
 
-	var token = await client!.CreateTokenAsync("test", default).ConfigureAwait(false);
+	var info = JsonSerializer.Serialize(new
+	{
+		uid = 1,
+		nickname = "Player1",
+		currency = "IDN",
+		table = "B",
+		language = "id",
+		clientIP = "127.0.0.1"
+	});
+
+	var token = await client!.CreateTokenAsync("test", info, default).ConfigureAwait(false);
 
 	context.Data.Add("token", token);
 

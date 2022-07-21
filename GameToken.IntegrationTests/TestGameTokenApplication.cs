@@ -20,7 +20,7 @@ internal class TestGameTokenApplication : WebApplicationFactory<Program>
 
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
-		builder.ConfigureServices(services =>
+		_ = builder.ConfigureServices(services =>
 		{
 			_ = services
 				.AddFakeNatsMessageQueue()
@@ -29,10 +29,9 @@ internal class TestGameTokenApplication : WebApplicationFactory<Program>
 						Options.DefaultName,
 						exporterOptions =>
 						{
-							exporterOptions.Endpoint = null;
+							exporterOptions.TimeoutMilliseconds = 0;
 						}))
 				.AddSingleton<ITokenStore>(Substitute.For<ITokenStore>());
-			;
 		});
 
 		_webHostConfigure?.Invoke(builder);

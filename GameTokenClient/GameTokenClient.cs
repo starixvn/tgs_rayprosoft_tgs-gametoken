@@ -20,12 +20,19 @@ internal class GameTokenClient : IGameTokenClient
 		_httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 	}
 
-	public async ValueTask<string> CreateTokenAsync(string playerCode, CancellationToken cancellationToken)
+	public async ValueTask<string> CreateTokenAsync(string playerCode, string info, CancellationToken cancellationToken)
 	{
+		var request = new
+		{
+			info
+		};
+
+		var requestContent = new StringContent(JsonSerializer.Serialize(request, _SerializerOptions), Encoding.UTF8, MediaTypeNames.Application.Json);
+
 		var response = await _httpClient
 			.PostAsync(
 				$"/token/{playerCode}",
-				new StringContent(String.Empty, Encoding.UTF8, MediaTypeNames.Application.Json),
+				requestContent,
 				cancellationToken)
 			.ConfigureAwait(false);
 

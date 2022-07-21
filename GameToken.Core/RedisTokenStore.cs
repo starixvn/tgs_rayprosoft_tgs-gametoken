@@ -64,7 +64,12 @@ internal class RedisTokenStore : ITokenStore
 
 		return token is null
 			? null
-			: new GameTokenInfo(token.Id, token.PlayerCode, token.CreatedDate, true);
+			: new GameTokenInfo(
+				token.Id,
+				token.PlayerCode,
+				token.Info,
+				token.CreatedDate,
+				true);
 	}
 
 	public async ValueTask DeleteTokenAsync(string id)
