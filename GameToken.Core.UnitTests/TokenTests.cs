@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -17,7 +18,17 @@ public class TokenTests
 
 		var sut = new CreateTokenCommandService(fakeTokenStore);
 
-		var command = new CreateTokenCommand("Player1");
+		var command = new CreateTokenCommand(
+			  PlayerCode: "Player1",
+			  Info: JsonSerializer.Serialize(new
+			  {
+				  uid = 1,
+				  nickname = "Player1",
+				  currency = "IDN",
+				  table = "B",
+				  language = "id",
+				  clientIP = "127.0.0.1"
+			  }));
 
 		var before = DateTime.UtcNow;
 		await sut.GetAsync(command);
@@ -39,7 +50,20 @@ public class TokenTests
 		var query = new GetTokenQuery("tokenId");
 
 		fakeTokenStore.GetTokenAsync(Arg.Is(query.Id))
-			.Returns(new GameTokenInfo(query.Id, "Player1", DateTime.UtcNow, true));
+			.Returns(new GameTokenInfo(
+				 query.Id,
+				 "Player1",
+				Info: JsonSerializer.Serialize(new
+				{
+					uid = 1,
+					nickname = "Player1",
+					currency = "IDN",
+					table = "B",
+					language = "id",
+					clientIP = "127.0.0.1"
+				}),
+				DateTime.UtcNow,
+				true));
 
 		var actual = await sut.GetAsync(query);
 

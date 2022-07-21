@@ -15,7 +15,12 @@ internal class CreateTokenCommandService : IGetService<CreateTokenCommand, strin
 	{
 		var newId = Guid.NewGuid().ToString("n");
 
-		var token = new Token(newId, command.PlayerCode, DateTime.UtcNow);
+		var token = new Token(
+			newId,
+			command.PlayerCode,
+			command.Info,
+			DateTime.UtcNow);
+
 		await _tokenStore.CreateTokenAsync(token).ConfigureAwait(false);
 
 		return newId;

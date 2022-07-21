@@ -9,5 +9,7 @@ internal class MongoToken
 
 	public string PlayerCode { get; set; } = default!;
 
+	public string Info { get; set; } = default!;
+
 	public DateTime CreatedDate { get; set; }
 }
