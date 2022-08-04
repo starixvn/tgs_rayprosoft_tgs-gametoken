@@ -6,7 +6,7 @@ pipeline {
 	
 	environment {
 		BuildConfiguration = 'Debug'
-		ImageName = "harbor.rpgp.cc/tgs/game-token"
+		ImageName = "pgtgs/game-token"
 	}
 
 	stages {
@@ -19,14 +19,17 @@ pipeline {
                         case ['origin/main','main']:
                             env.kube_ns = "prod";
                             env.k8s_config = 'stag-k8s-config';
+                            env.ingress_enabled = "false";
                             break;
                         case ['origin/release','release']:
                             env.kube_ns = "staging";
                             env.k8s_config = 'stag-k8s-config';
+                            env.ingress_enabled = "false";
                             break;
                         default:
                             env.kube_ns = "dev";
-                            env.k8s_config = 'k8s-kube-config' 
+                            env.k8s_config = 'k8s-kube-config';
+                            env.ingress_enabled = "true";
                             break;
                     }
                 }
@@ -62,20 +65,20 @@ pipeline {
 
 		stage('Push packages') {
 			steps {
-				sh 'dotnet pack -c $BuildConfiguration "GameTokenClient/GameTokenClient.csproj" --no-build'
-				sh 'dotnet nuget push "GameTokenClient/bin/$BuildConfiguration/*.nupkg" -s raypro-baget -k admin --skip-duplicate'
+				sh 'dotnet pack -c $BuildConfiguration "Tgs.GameToken.Client/Tgs.GameToken.Client.csproj" --no-build'
+				sh 'dotnet nuget push "Tgs.GameToken.Client/bin/$BuildConfiguration/*.nupkg" -s raypro-baget -k admin --skip-duplicate'
 			}
 		}
 
 		stage('Build Docker Image') {
 			steps {
-				sh 'dotnet build "GameTokenService/GameTokenService.csproj" -c $BuildConfiguration -t:ContainerBuild -p:DockerfileTag="$ImageName:$TAG" --no-restore '
+				sh 'dotnet build "Tgs.GameToken/Tgs.GameToken.csproj" -c $BuildConfiguration -t:ContainerBuild -p:DockerfileTag="$ImageName:$TAG" --no-restore '
 			}
 		}
 
 		stage('Push Docker Image') {
 			steps {
-				sh 'sudo docker push $ImageName:$TAG'
+				sh 'docker push $ImageName:$TAG'
 			}
 		}
 
@@ -117,7 +120,7 @@ pipeline {
                                 "tolerations": [$dedicated],
                                 "resources": $resources,
                                 "ingress":{
-                                    "enabled": true,
+                                    "enabled": $ingress_enabled,
                                     "hosts": [
                                         {
                                             "host": "game-token.rpgp.cc",
@@ -143,7 +146,7 @@ pipeline {
                                 "tolerations": [$dedicated],
                                 "resources": $resources,
                                 "ingress":{
-                                    "enabled": true,
+                                    "enabled": $ingress_enabled,
                                     "hosts": [
                                         {
                                             "host": "game-token.rpgp.cc",
