@@ -49,7 +49,7 @@ Selector labels
 app.kubernetes.io/name: {{ include "game-token.name" . }}
 app: {{ include "game-token.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-tgs.kind: game-token
+tgs.kind: game
 {{- end }}
 
 {{/*

@@ -65,14 +65,14 @@ pipeline {
 
 		stage('Push packages') {
 			steps {
-				sh 'dotnet pack -c $BuildConfiguration "GameTokenClient/GameTokenClient.csproj" --no-build'
-				sh 'dotnet nuget push "GameTokenClient/bin/$BuildConfiguration/*.nupkg" -s raypro-baget -k admin --skip-duplicate'
+				sh 'dotnet pack -c $BuildConfiguration "Tgs.GameToken.Client/Tgs.GameToken.Client.csproj" --no-build'
+				sh 'dotnet nuget push "Tgs.GameToken.Client/bin/$BuildConfiguration/*.nupkg" -s raypro-baget -k admin --skip-duplicate'
 			}
 		}
 
 		stage('Build Docker Image') {
 			steps {
-				sh 'dotnet build "GameTokenService/GameTokenService.csproj" -c $BuildConfiguration -t:ContainerBuild -p:DockerfileTag="$ImageName:$TAG" --no-restore '
+				sh 'dotnet build "Tgs.GameToken/Tgs.GameToken.csproj" -c $BuildConfiguration -t:ContainerBuild -p:DockerfileTag="$ImageName:$TAG" --no-restore '
 			}
 		}
 
