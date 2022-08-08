@@ -2,7 +2,6 @@
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
-using Tgs.GameToken.Client;
 
 namespace Tgs.GameToken.Client;
 
@@ -21,14 +20,9 @@ internal class GameTokenClient : IGameTokenClient
 		_httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 	}
 
-	public async ValueTask<string> CreateTokenAsync(string playerCode, string info, CancellationToken cancellationToken)
+	public async ValueTask<string> CreateTokenAsync(string playerCode, CancellationToken cancellationToken)
 	{
-		var request = new
-		{
-			info
-		};
-
-		var requestContent = new StringContent(JsonSerializer.Serialize(request, _SerializerOptions), Encoding.UTF8, MediaTypeNames.Application.Json);
+		var requestContent = new StringContent(string.Empty, Encoding.UTF8, MediaTypeNames.Application.Json);
 
 		var response = await _httpClient
 			.PostAsync(
@@ -100,6 +94,90 @@ internal class GameTokenClient : IGameTokenClient
 	{
 		var response = await _httpClient
 			.DeleteAsync($"/token/{token}", cancellationToken)
+			.ConfigureAwait(false);
+
+		if (response.StatusCode is not HttpStatusCode.Accepted)
+			throw new GameTokenApiException("Unknown error");
+	}
+
+	public async ValueTask<bool> CheckAuthValidAsync(string auth, CancellationToken cancellationToken)
+	{
+		var requestMessage = new HttpRequestMessage(HttpMethod.Head, $"/auth/{auth}")
+		{
+			Content = new StringContent(string.Empty, Encoding.UTF8, MediaTypeNames.Application.Json)
+		};
+
+		var response = await _httpClient
+			.SendAsync(requestMessage, cancellationToken)
+			.ConfigureAwait(false);
+
+		return response.StatusCode switch
+		{
+			HttpStatusCode.OK => true,
+			HttpStatusCode.NotFound => false,
+			HttpStatusCode.NotAcceptable => false,
+			_ => throw new GameTokenApiException("Unknown error")
+		};
+	}
+
+	public async ValueTask<string> CreateAuthAsync(string playerCode, string info, CancellationToken cancellationToken)
+	{
+		var request = new
+		{
+			Info = info
+		};
+		var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, MediaTypeNames.Application.Json);
+
+		var response = await _httpClient
+			.PostAsync(
+				$"/auth/{playerCode}",
+				requestContent,
+				cancellationToken)
+			.ConfigureAwait(false);
+
+		switch (response.StatusCode)
+		{
+			case HttpStatusCode.Created:
+				{
+					var contentJson = await response.Content
+						.ReadAsStringAsync(cancellationToken)
+						.ConfigureAwait(false);
+
+					return JsonSerializer.Deserialize<string>(contentJson, _SerializerOptions)!;
+				}
+			default:
+				throw new GameTokenApiException("Create token fail.");
+		}
+	}
+
+	public async ValueTask<GameAuthInfo?> GetAuthInfoAsync(string auth, CancellationToken cancellationToken)
+	{
+		var response = await _httpClient
+			.GetAsync($"/auth/{auth}", cancellationToken)
+			.ConfigureAwait(false);
+
+		switch (response.StatusCode)
+		{
+			case HttpStatusCode.OK:
+				{
+					var contentJson = await response.Content
+						.ReadAsStringAsync(cancellationToken)
+						.ConfigureAwait(false);
+
+					return JsonSerializer.Deserialize<GameAuthInfo>(contentJson, _SerializerOptions)!;
+				}
+			case HttpStatusCode.NotFound:
+				return null;
+
+			default:
+				throw new GameTokenApiException("Unknown error");
+		}
+	}
+
+	public async ValueTask RevokeAuthAsync(string auth, CancellationToken cancellationToken)
+	{
+		var response = await _httpClient
+			.DeleteAsync($"/auth/{auth}", cancellationToken)
 			.ConfigureAwait(false);
 
 		if (response.StatusCode is not HttpStatusCode.Accepted)

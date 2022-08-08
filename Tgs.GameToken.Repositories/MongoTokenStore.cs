@@ -22,8 +22,7 @@ internal class MongoTokenStore : ITokenStore
 			{
 				Id = token.Id,
 				PlayerCode = token.PlayerCode,
-				Info = token.Info,
-				CreatedDate = token.CreatedDate
+				CreatedOn = token.CreatedOn
 			})
 			.ConfigureAwait(false);
 
@@ -43,8 +42,7 @@ internal class MongoTokenStore : ITokenStore
 			: new GameTokenInfo(
 				tokenData.Id,
 				tokenData.PlayerCode,
-				tokenData.Info,
-				tokenData.CreatedDate,
+				tokenData.CreatedOn,
 				false);
 	}
 

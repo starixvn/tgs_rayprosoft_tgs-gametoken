@@ -24,18 +24,9 @@ public class RedisTokenStoreTests
 			NullLogger<RedisTokenStore>.Instance);
 
 		var token = new Token(
-			   "id",
-				 "Player1",
-				 JsonSerializer.Serialize(new
-				 {
-					 uid = 1,
-					 nickname = "Player1",
-					 currency = "IDN",
-					 table = "B",
-					 language = "id",
-					 clientIP = "127.0.0.1"
-				 }),
-				 DateTime.UtcNow);
+			"id",
+			"Player1",
+			DateTime.UtcNow);
 
 		await sut.CreateTokenAsync(token);
 
@@ -62,15 +53,6 @@ public class RedisTokenStoreTests
 		var token = new Token(
 			   "id",
 				 "Player1",
-				 JsonSerializer.Serialize(new
-				 {
-					 uid = 1,
-					 nickname = "Player1",
-					 currency = "IDN",
-					 table = "B",
-					 language = "id",
-					 clientIP = "127.0.0.1"
-				 }),
 				 DateTime.UtcNow);
 
 		_ = fakeRedisDatabase

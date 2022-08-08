@@ -9,9 +9,7 @@ public class GameTokenViewModel
 
 	public string PlayerCode { get; init; } = default!;
 
-	public string Info { get; init; } = default!;
-
-	public DateTime CreatedDate { get; init; }
+	public DateTime CreatedOn { get; init; }
 
 	public bool IsValid { get; init; }
 }

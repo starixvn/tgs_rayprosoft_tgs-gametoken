@@ -4,7 +4,7 @@ namespace Tgs.GameToken;
 
 public class MongoConnectionManager
 {
-	private MongoClient _mongoClient;
+	private readonly MongoClient _mongoClient;
 
 	public IMongoDatabase Database { get; }
 
