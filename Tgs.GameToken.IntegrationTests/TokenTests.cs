@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ExpectedObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using Tgs.GameToken.Client;
 using Tgs.GameToken.MessageQueue;
 using Tgs.MessageQueue;
-using Tgs.GameToken.Client;
 
 namespace Tgs.GameToken.IntegrationTests;
 
@@ -24,17 +23,7 @@ public class TokenTests
 
 		var sut = new GameTokenClient(httpClient);
 
-		var info = JsonSerializer.Serialize(new
-		{
-			uid = 1,
-			nickname = "Player1",
-			currency = "IDN",
-			table = "B",
-			language = "id",
-			clientIP = "127.0.0.1"
-		});
-
-		var actual = await sut.CreateTokenAsync("player1", info, default);
+		var actual = await sut.CreateTokenAsync("player1", default);
 
 		Assert.IsFalse(string.IsNullOrWhiteSpace(actual));
 	}
@@ -45,8 +34,7 @@ public class TokenTests
 		var token = "test";
 
 		await using var web = new TestGameTokenApplication(hostBuilder =>
-		{
-			_ = hostBuilder.ConfigureServices(services =>
+		_ = hostBuilder.ConfigureServices(services =>
 			{
 				var fakeTokenStore = Substitute.For<ITokenStore>();
 
@@ -54,21 +42,11 @@ public class TokenTests
 					.Returns(new Tgs.GameToken.GameTokenInfo(
 						token,
 						"Player1",
-						JsonSerializer.Serialize(new
-						{
-							uid = 1,
-							nickname = "Player1",
-							currency = "IDN",
-							table = "B",
-							language = "id",
-							clientIP = "127.0.0.1"
-						}),
 						DateTime.UtcNow,
 						true));
 
 				_ = services.AddSingleton(fakeTokenStore);
-			});
-		});
+			}));
 
 		var httpClient = web.CreateClient();
 
@@ -85,30 +63,19 @@ public class TokenTests
 		var token = "test";
 
 		await using var web = new TestGameTokenApplication(hostBuilder =>
-		{
-			_ = hostBuilder.ConfigureServices(services =>
+		_ = hostBuilder.ConfigureServices(services =>
 			{
 				var fakeTokenStore = Substitute.For<ITokenStore>();
 
 				_ = fakeTokenStore.GetTokenAsync(Arg.Is(token))
-					.Returns(new Tgs.GameToken.GameTokenInfo(
+					.Returns(new GameTokenInfo(
 						token,
 						"Player1",
-						JsonSerializer.Serialize(new
-						{
-							uid = 1,
-							nickname = "Player1",
-							currency = "IDN",
-							table = "B",
-							language = "id",
-							clientIP = "127.0.0.1"
-						}),
 						DateTime.UtcNow,
 						false));
 
 				_ = services.AddSingleton(fakeTokenStore);
-			});
-		});
+			}));
 
 		var httpClient = web.CreateClient();
 
@@ -123,40 +90,28 @@ public class TokenTests
 	public async Task Get_Token()
 	{
 		var token = "test";
-		var expected = new Tgs.GameToken.Client.GameTokenInfo
+		var expected = new Client.GameTokenInfo
 		{
 			Id = token,
 			PlayerCode = "Player1",
-			Info = JsonSerializer.Serialize(new
-			{
-				uid = 1,
-				nickname = "Player1",
-				currency = "IDN",
-				table = "B",
-				language = "id",
-				clientIP = "127.0.0.1"
-			}),
-			CreatedDate = DateTime.UtcNow,
+			CreatedOn = DateTime.UtcNow,
 			IsValid = true
 		};
 
 		await using var web = new TestGameTokenApplication(hostBuilder =>
-		{
-			_ = hostBuilder.ConfigureServices(services =>
+		_ = hostBuilder.ConfigureServices(services =>
 			{
 				var fakeTokenStore = Substitute.For<ITokenStore>();
 
 				_ = fakeTokenStore.GetTokenAsync(Arg.Is(token))
-					.Returns(new Tgs.GameToken.GameTokenInfo(
+					.Returns(new GameTokenInfo(
 						expected.Id,
 						expected.PlayerCode,
-						expected.Info,
-						expected.CreatedDate,
+						expected.CreatedOn,
 						expected.IsValid));
 
 				_ = services.AddSingleton(fakeTokenStore);
-			});
-		});
+			}));
 
 		var httpClient = web.CreateClient();
 
@@ -174,8 +129,7 @@ public class TokenTests
 		var fakeTokenStore = Substitute.For<ITokenStore>();
 
 		await using var web = new TestGameTokenApplication(hostBuilder =>
-		{
-			_ = hostBuilder.ConfigureServices(services =>
+		_ = hostBuilder.ConfigureServices(services =>
 			{
 				_ = services.AddSingleton(fakeTokenStore);
 
@@ -183,8 +137,8 @@ public class TokenTests
 				{
 					var fakeMessageSender = Substitute.For<IMessageSender>();
 
-					_ = fakeMessageSender.SendAsync(
-						Arg.Is("tgs.game-token.revoke"),
+					_ = fakeMessageSender.PublishAsync(
+						Arg.Is("tgs.gametoken.token.revoke"),
 						Arg.Any<ReadOnlyMemory<byte>>(),
 						Arg.Any<CancellationToken>())
 						.Returns(callInfo =>
@@ -199,8 +153,7 @@ public class TokenTests
 
 					return fakeMessageSender;
 				});
-			});
-		});
+			}));
 
 		var httpClient = web.CreateClient();
 

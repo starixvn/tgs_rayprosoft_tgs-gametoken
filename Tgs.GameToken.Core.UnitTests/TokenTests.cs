@@ -1,5 +1,4 @@
 using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -18,16 +17,7 @@ public class TokenTests
 		var sut = new CreateTokenCommandService(fakeTokenStore);
 
 		var command = new CreateTokenCommand(
-			  PlayerCode: "Player1",
-			  Info: JsonSerializer.Serialize(new
-			  {
-				  uid = 1,
-				  nickname = "Player1",
-				  currency = "IDN",
-				  table = "B",
-				  language = "id",
-				  clientIP = "127.0.0.1"
-			  }));
+			  PlayerCode: "Player1");
 
 		var before = DateTime.UtcNow;
 		_ = await sut.GetAsync(command);
@@ -35,8 +25,8 @@ public class TokenTests
 
 		await fakeTokenStore.Received(1)
 				.CreateTokenAsync(Arg.Is<Token>(token => token.PlayerCode == command.PlayerCode
-					&& token.CreatedDate >= before
-					&& token.CreatedDate <= after)).ConfigureAwait(false);
+					&& token.CreatedOn >= before
+					&& token.CreatedOn <= after)).ConfigureAwait(false);
 	}
 
 	[TestMethod]
@@ -52,16 +42,7 @@ public class TokenTests
 			.Returns(new GameTokenInfo(
 				 query.Id,
 				 "Player1",
-				Info: JsonSerializer.Serialize(new
-				{
-					uid = 1,
-					nickname = "Player1",
-					currency = "IDN",
-					table = "B",
-					language = "id",
-					clientIP = "127.0.0.1"
-				}),
-				DateTime.UtcNow,
+				 DateTime.UtcNow,
 				true));
 
 		var actual = await sut.GetAsync(query);

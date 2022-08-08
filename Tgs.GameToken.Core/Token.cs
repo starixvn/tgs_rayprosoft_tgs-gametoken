@@ -3,5 +3,4 @@
 public record Token(
 	string Id,
 	string PlayerCode,
-	string Info,
-	DateTime CreatedDate);
+	DateTime CreatedOn);

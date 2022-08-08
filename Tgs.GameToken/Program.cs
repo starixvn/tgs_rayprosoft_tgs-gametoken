@@ -71,7 +71,8 @@ builder.Services
 
 				options.Url = config.GetConnectionString("Nats");
 			})
-			.AddHandler<RevokeTokenHandler>("tgs.game-token.revoke");
+			.AddHandler<RevokeTokenHandler>("tgs.gametoken.token.revoke")
+			.AddHandler<RevokeAuthHandler>("tgs.gametoken.auth.revoke");
 	})
 	.AddNatsGlobPatternExchange("*");
 

@@ -19,11 +19,9 @@ public class TokenController : ControllerBase
 	[Produces(MediaTypeNames.Application.Json)]
 	public ValueTask<string> CreateTokenAsync(
 		[FromServices] IGetService<CreateTokenCommand, string> createTokenService,
-		string playerCode,
-		[FromBody] CreateTokenViewModel model)
+		string playerCode)
 		=> createTokenService.GetAsync(new CreateTokenCommand(
-			playerCode,
-			model.Info));
+			playerCode));
 
 	[HttpHead("{id}", Name = "CheckTokenValid")]
 	[SuccessStatusCode(200, "Token valid")]
@@ -76,8 +74,7 @@ public class TokenController : ControllerBase
 		{
 			Id = tokenInfo.Id,
 			PlayerCode = tokenInfo.PlayerCode,
-			Info = tokenInfo.Info,
-			CreatedDate = tokenInfo.CreatedDate,
+			CreatedOn = tokenInfo.CreatedOn,
 			IsValid = tokenInfo.IsValid
 		};
 	}
@@ -93,8 +90,8 @@ public class TokenController : ControllerBase
 			Id = id
 		};
 
-		return messageSender.SendAsync(
-			"tgs.game-token.revoke",
+		return messageSender.PublishAsync(
+			"tgs.gametoken.token.revoke",
 			request.ToByteArray(),
 			HttpContext.RequestAborted);
 	}

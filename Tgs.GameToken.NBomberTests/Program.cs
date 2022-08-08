@@ -1,11 +1,10 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NBomber.Contracts;
 using NBomber.CSharp;
-using Tgs.GameToken.Clients.DependencyInjection;
 using Tgs.GameToken.Client;
+using Tgs.GameToken.Clients.DependencyInjection;
 
 var initStep = Step.Create("Init", context =>
 {
@@ -15,7 +14,7 @@ var initStep = Step.Create("Init", context =>
 
 	_ = builder.ConfigureServices(services =>
 	{
-		services.AddGameTokenClient((options, sp) =>
+		_ = services.AddGameTokenClient((options, sp) =>
 		{
 			options.GameTokenUrl = new Uri("http://game-token.rpgp.cc");
 		});
@@ -32,17 +31,7 @@ var createTokenStep = Step.Create("Create Token", async context =>
 {
 	var client = context.Data.GetValueOrDefault("client") as IGameTokenClient;
 
-	var info = JsonSerializer.Serialize(new
-	{
-		uid = 1,
-		nickname = "Player1",
-		currency = "IDN",
-		table = "B",
-		language = "id",
-		clientIP = "127.0.0.1"
-	});
-
-	var token = await client!.CreateTokenAsync("test", info, default).ConfigureAwait(false);
+	var token = await client!.CreateTokenAsync("test", default).ConfigureAwait(false);
 
 	context.Data.Add("token", token);
 

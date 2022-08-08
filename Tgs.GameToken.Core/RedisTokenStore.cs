@@ -67,8 +67,7 @@ internal class RedisTokenStore : ITokenStore
 			: new GameTokenInfo(
 				token.Id,
 				token.PlayerCode,
-				token.Info,
-				token.CreatedDate,
+				token.CreatedOn,
 				true);
 	}
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -25,15 +24,6 @@ public class MemoryCachedTokenStoreTests
 		var token = new GameTokenInfo(
 			   "id",
 				 "Player1",
-				 JsonSerializer.Serialize(new
-				 {
-					 uid = 1,
-					 nickname = "Player1",
-					 currency = "IDN",
-					 table = "B",
-					 language = "id",
-					 clientIP = "127.0.0.1"
-				 }),
 				 DateTime.UtcNow,
 				 true);
 		_ = fakeMemoryCache.Set($"Tgs:GameToken:id", token);
@@ -61,15 +51,6 @@ public class MemoryCachedTokenStoreTests
 		var token = new GameTokenInfo(
 			   "id",
 				 "Player1",
-				 JsonSerializer.Serialize(new
-				 {
-					 uid = 1,
-					 nickname = "Player1",
-					 currency = "IDN",
-					 table = "B",
-					 language = "id",
-					 clientIP = "127.0.0.1"
-				 }),
 				 DateTime.UtcNow,
 				 true);
 		_ = fakeSourceTokenStore.GetTokenAsync(Arg.Is(token.Id))
@@ -98,15 +79,6 @@ public class MemoryCachedTokenStoreTests
 		var token = new Token(
 			   "id",
 				 "Player1",
-				 JsonSerializer.Serialize(new
-				 {
-					 uid = 1,
-					 nickname = "Player1",
-					 currency = "IDN",
-					 table = "B",
-					 language = "id",
-					 clientIP = "127.0.0.1"
-				 }),
 				 DateTime.UtcNow);
 
 		await sut.CreateTokenAsync(token);
@@ -114,7 +86,7 @@ public class MemoryCachedTokenStoreTests
 		await fakeSourceTokenStore.Received(1)
 				.CreateTokenAsync(Arg.Is<Token>(t => t.Id == token.Id
 					&& t.PlayerCode == token.PlayerCode
-					&& t.CreatedDate == token.CreatedDate)).ConfigureAwait(false);
+					&& t.CreatedOn == token.CreatedOn)).ConfigureAwait(false);
 	}
 
 	[TestMethod]
