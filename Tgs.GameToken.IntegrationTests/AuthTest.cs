@@ -17,7 +17,13 @@ public class AuthTest
 	[TestMethod]
 	public async Task Create_Auth()
 	{
-		await using var web = new TestGameTokenApplication();
+		await using var web = new TestGameTokenApplication(hostBuilder =>
+		_ = hostBuilder.ConfigureServices(services =>
+		{
+			var fakeAuthStore = Substitute.For<IAuthStore>();
+
+			_ = services.AddSingleton(fakeAuthStore);
+		}));
 
 		var httpClient = web.CreateClient();
 
