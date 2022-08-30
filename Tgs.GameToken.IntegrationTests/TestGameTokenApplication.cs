@@ -20,18 +20,13 @@ internal class TestGameTokenApplication : WebApplicationFactory<Program>
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
 		_ = builder.ConfigureServices(services =>
-		{
-			_ = services
+		_ = services
 				.AddFakeNatsMessageQueue()
 				.AddSingleton<IConfigureOptions<OtlpExporterOptions>>(
 					sp => new ConfigureNamedOptions<OtlpExporterOptions>(
 						Options.DefaultName,
-						exporterOptions =>
-						{
-							exporterOptions.TimeoutMilliseconds = 0;
-						}))
-				.AddSingleton<ITokenStore>(Substitute.For<ITokenStore>());
-		});
+						exporterOptions => exporterOptions.TimeoutMilliseconds = 0))
+				.AddSingleton(Substitute.For<ITokenStore>()));
 
 		_webHostConfigure?.Invoke(builder);
 	}

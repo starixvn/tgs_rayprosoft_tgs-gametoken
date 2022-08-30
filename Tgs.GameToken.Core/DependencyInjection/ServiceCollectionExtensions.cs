@@ -27,6 +27,11 @@ public static class ServiceCollectionExtensions
 			.RegisterAllServiceUtilityTypes(Assembly.GetExecutingAssembly(), ServiceLifetime.Transient)
 			.AddSingleton<NoopTokenStore>()
 			.AddTransient(
-				sp => (ITokenStore)sp.GetRequiredService(configuration.SourceStoreType));
+				sp => (ITokenStore)sp.GetRequiredService(configuration.SourceStoreType))
+			.AddTransient<IAuthStore>(sp =>
+			{
+				var options = sp.GetRequiredService<IOptions<GameTokenOptions>>().Value;
+				return ActivatorUtilities.CreateInstance<AuthStore>(sp, options.RedisDatabaseResolver(sp), TimeSpan.FromMinutes(5));
+			});
 	}
 }

@@ -3,6 +3,5 @@
 public record GameTokenInfo(
 	string Id,
 	string PlayerCode,
-	string Info,
-	DateTime CreatedDate,
+	DateTime CreatedOn,
 	bool IsValid);
