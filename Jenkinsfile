@@ -105,10 +105,12 @@ pipeline {
                         def resources = getResources(env.k8s_config, env.kube_ns, "game-token")
                         def dedicated = getTgsSettings(env.k8s_config, env.kube_ns, "dedicated")
                         def node_selector = getTgsSettings(env.k8s_config, env.kube_ns, "node-selector")
+                        def autoscaling = getAutoscaling(env.k8s_config, env.kube_ns, "game-token")
                         
                         println resources
                         println dedicated
                         println node_selector
+                        println autoscaling
 
                         sh """
                             cat << EOF | yq e -P | helm template deployment/k8s/game-token \
@@ -119,6 +121,7 @@ pipeline {
                                 "nodeSelector": $node_selector,
                                 "tolerations": [$dedicated],
                                 "resources": $resources,
+                                "autoscaling": $autoscaling,
                                 "ingress":{
                                     "enabled": $ingress_enabled,
                                     "hosts": [
@@ -145,6 +148,7 @@ pipeline {
                                 "nodeSelector": $node_selector,
                                 "tolerations": [$dedicated],
                                 "resources": $resources,
+                                "autoscaling": $autoscaling,
                                 "ingress":{
                                     "enabled": $ingress_enabled,
                                     "hosts": [
