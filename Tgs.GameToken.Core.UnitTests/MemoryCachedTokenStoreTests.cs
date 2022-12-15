@@ -31,7 +31,7 @@ public class MemoryCachedTokenStoreTests
 		var actual = await sut.GetTokenAsync("id");
 
 		Assert.IsNotNull(actual);
-		Assert.AreEqual(token.PlayerCode, actual.PlayerCode);
+		Assert.AreEqual(token.PlayerCode, actual!.PlayerCode);
 
 		_ = await fakeSourceTokenStore.Received(1)
 			.GetTokenAsync(Arg.Is("id")).ConfigureAwait(false);
@@ -59,7 +59,7 @@ public class MemoryCachedTokenStoreTests
 		var actual = await sut.GetTokenAsync("id");
 
 		Assert.IsNotNull(actual);
-		Assert.AreEqual(token.PlayerCode, actual.PlayerCode);
+		Assert.AreEqual(token.PlayerCode, actual!.PlayerCode);
 
 		_ = await fakeSourceTokenStore.Received(2)
 			.GetTokenAsync(Arg.Is("id")).ConfigureAwait(false);

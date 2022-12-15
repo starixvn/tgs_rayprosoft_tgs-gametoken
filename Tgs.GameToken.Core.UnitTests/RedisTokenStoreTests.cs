@@ -68,7 +68,7 @@ public class RedisTokenStoreTests
 		var actual = await sut.GetTokenAsync("id");
 
 		Assert.IsNotNull(actual);
-		Assert.IsTrue(actual.IsValid);
+		Assert.IsTrue(actual!.IsValid);
 	}
 
 	[TestMethod]
