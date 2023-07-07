@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using NBomber.Contracts;
 using NBomber.CSharp;
 using Tgs.GameToken.Client;
-using Tgs.GameToken.Clients.DependencyInjection;
 
 var initStep = Step.Create("Init", context =>
 {
@@ -12,13 +11,7 @@ var initStep = Step.Create("Init", context =>
 
 	_ = builder.ConfigureLogging(logging => logging.ClearProviders());
 
-	_ = builder.ConfigureServices(services =>
-	{
-		_ = services.AddGameTokenClient((options, sp) =>
-		{
-			options.GameTokenUrl = new Uri("http://game-token.rpgp.cc");
-		});
-	});
+	_ = builder.ConfigureServices(services => _ = services.AddGameTokenClient((options, sp) => options.GameTokenUrl = new Uri("http://game-token.rpgp.cc")));
 
 	var app = builder.Build();
 

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using Tgs.GameToken.Client;
 
-namespace Tgs.GameToken.Clients.DependencyInjection;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {

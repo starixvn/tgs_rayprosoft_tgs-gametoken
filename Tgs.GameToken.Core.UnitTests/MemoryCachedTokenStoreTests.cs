@@ -102,7 +102,7 @@ public class MemoryCachedTokenStoreTests
 
 		var key = "Tgs:GameToken:test";
 		var entry = fakeMemoryCache.CreateEntry(key);
-		_ = entry.SetValue(null);
+		_ = entry.SetValue(value: null);
 		entry.Dispose();
 
 		Assert.IsTrue(fakeMemoryCache.TryGetValue(key, out _));
