@@ -32,28 +32,35 @@ internal class AuthStore : IAuthStore
 
 		var json = JsonSerializer.Serialize(auth, _SerializerOptions);
 
-		_ = await _database.StringSetAsync(
-			key,
-			json,
+		_ = await _database
+			.StringSetAsync(
+			key: key,
+			value: json,
 			expiry: _expiry,
-			when: When.NotExists).ConfigureAwait(false);
+			when: When.NotExists)
+			.ConfigureAwait(false);
 	}
 
 	public async ValueTask DeleteAuthAsync(string id)
 	{
 		var key = GetKey(id);
 
-		_ = await _database.KeyDeleteAsync(
+		_ = await _database
+			.KeyDeleteAsync(
 			key: key,
 			flags: CommandFlags.FireAndForget
-			).ConfigureAwait(false);
+			)
+			.ConfigureAwait(false);
 	}
 
 	public async ValueTask<GameAuthInfo?> GetAuthAsync(string id)
 	{
 		var key = GetKey(id);
 
-		var json = await _database.StringGetAsync(key).ConfigureAwait(false);
+		var json = await _database
+			.StringGetAsync(
+			key: key)
+			.ConfigureAwait(false);
 		_logger.LogInformation("Redis token: {json}", json);
 		if (!json.HasValue)
 		{
