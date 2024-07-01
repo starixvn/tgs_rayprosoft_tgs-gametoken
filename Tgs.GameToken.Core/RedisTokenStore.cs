@@ -4,7 +4,11 @@ using StackExchange.Redis;
 
 namespace Tgs.GameToken;
 
-internal class RedisTokenStore : ITokenStore
+internal class RedisTokenStore(
+	ITokenStore sourceTokenStore,
+	TimeSpan expiry,
+	IDatabase redisDatabase,
+	ILogger<RedisTokenStore> logger) : ITokenStore
 {
 	private static readonly JsonSerializerOptions _SerializerOptions = new()
 	{
@@ -12,53 +16,36 @@ internal class RedisTokenStore : ITokenStore
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 	};
 
-	private readonly ITokenStore _sourceTokenStore;
-	private readonly TimeSpan _expiry;
-	private readonly IDatabase _redisDatabase;
-	private readonly ILogger<RedisTokenStore> _logger;
-
-	public RedisTokenStore(
-		ITokenStore sourceTokenStore,
-		TimeSpan expiry,
-		IDatabase redisDatabase,
-		ILogger<RedisTokenStore> logger)
+	public async ValueTask CreateTokenAsync(Token token, CancellationToken cancellationToken = default)
 	{
-		_sourceTokenStore = sourceTokenStore ?? throw new ArgumentNullException(nameof(sourceTokenStore));
-		_expiry = expiry;
-		_redisDatabase = redisDatabase ?? throw new ArgumentNullException(nameof(redisDatabase));
-		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
-	}
-
-	public async ValueTask CreateTokenAsync(Token token)
-	{
-		var key = $"Tgs:GameToken:{token.Id}";
+		var key = GetKey(token.Id);
 
 		var json = JsonSerializer.Serialize(token, _SerializerOptions);
 
-		_ = await _redisDatabase.StringSetAsync(
+		_ = await redisDatabase.StringSetAsync(
 			key,
 			json,
-			expiry: _expiry,
+			expiry: expiry,
 			when: When.NotExists).ConfigureAwait(false);
 
-		await _sourceTokenStore.CreateTokenAsync(token).ConfigureAwait(false);
+		await sourceTokenStore.CreateTokenAsync(token, cancellationToken).ConfigureAwait(false);
 	}
 
-	public async ValueTask<GameTokenInfo?> GetTokenAsync(string id)
+	public async ValueTask<GameTokenInfo?> GetTokenAsync(string id, CancellationToken cancellationToken = default)
 	{
-		var key = $"Tgs:GameToken:{id}";
+		var key = GetKey(id);
 
-		var json = await _redisDatabase.StringGetAsync(key).ConfigureAwait(false);
+		var json = await redisDatabase.StringGetAsync(key).ConfigureAwait(false);
 
 		if (json.HasValue)
-			_ = await _redisDatabase.StringSetAsync(
+			_ = await redisDatabase.StringSetAsync(
 				key,
 				json,
-				_expiry).ConfigureAwait(false);
+				expiry).ConfigureAwait(false);
 		else
-			return await _sourceTokenStore.GetTokenAsync(id).ConfigureAwait(false);
+			return await sourceTokenStore.GetTokenAsync(id, cancellationToken).ConfigureAwait(false);
 
-		_logger.LogInformation("Redis token: {json}", json);
+		logger.LogInformation("Redis token: {json}", json);
 
 		var token = JsonSerializer.Deserialize<Token>(json!, _SerializerOptions);
 
@@ -71,12 +58,24 @@ internal class RedisTokenStore : ITokenStore
 				true);
 	}
 
-	public async ValueTask DeleteTokenAsync(string id)
+	public async ValueTask DeleteTokenAsync(string id, CancellationToken cancellationToken = default)
 	{
-		await _sourceTokenStore.DeleteTokenAsync(id).ConfigureAwait(false);
+		var key = GetKey(id);
 
-		var key = $"Tgs:GameToken:{id}";
+		await sourceTokenStore.DeleteTokenAsync(
+			id: id,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
-		_ = await _redisDatabase.KeyDeleteAsync(key).ConfigureAwait(false);
+		_ = await redisDatabase.KeyDeleteAsync(
+			key: key,
+			flags: CommandFlags.FireAndForget)
+			.ConfigureAwait(false);
 	}
+
+	public ValueTask InitializationAsync(CancellationToken cancellationToken = default)
+		=> sourceTokenStore.InitializationAsync(cancellationToken);
+
+	private static string GetKey(string id)
+		=> string.Concat("Tgs:GameToken:", id);
 }

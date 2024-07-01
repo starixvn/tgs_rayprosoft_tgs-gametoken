@@ -14,6 +14,6 @@ public class MongoConnectionManager
 
 		_mongoClient = new MongoClient(mongoUrl.Url);
 
-		Database = _mongoClient.GetDatabase(mongoUrl.DatabaseName);
+		Database = _mongoClient.GetDatabase("game_token_master");
 	}
 }

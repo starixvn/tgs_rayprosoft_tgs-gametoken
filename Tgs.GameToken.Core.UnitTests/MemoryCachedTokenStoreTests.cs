@@ -1,16 +1,16 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using Xunit;
 
 namespace Tgs.GameToken.Core.UnitTests;
 
-[TestClass]
 public class MemoryCachedTokenStoreTests
 {
-	[TestMethod]
+	[Fact]
 	public async Task Get_Token_Hit_Cache()
 	{
 		var fakeSourceTokenStore = Substitute.For<ITokenStore>();
@@ -30,14 +30,14 @@ public class MemoryCachedTokenStoreTests
 
 		var actual = await sut.GetTokenAsync("id");
 
-		Assert.IsNotNull(actual);
-		Assert.AreEqual(token.PlayerCode, actual!.PlayerCode);
+		Assert.NotNull(actual);
+		Assert.Equal(token.PlayerCode, actual!.PlayerCode);
 
 		_ = await fakeSourceTokenStore.Received(1)
-			.GetTokenAsync(Arg.Is("id")).ConfigureAwait(false);
+			.GetTokenAsync(Arg.Is("id"));
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Get_Token_Miss_Cache()
 	{
 		var fakeSourceTokenStore = Substitute.For<ITokenStore>();
@@ -58,14 +58,14 @@ public class MemoryCachedTokenStoreTests
 
 		var actual = await sut.GetTokenAsync("id");
 
-		Assert.IsNotNull(actual);
-		Assert.AreEqual(token.PlayerCode, actual!.PlayerCode);
+		Assert.NotNull(actual);
+		Assert.Equal(token.PlayerCode, actual!.PlayerCode);
 
 		_ = await fakeSourceTokenStore.Received(2)
-			.GetTokenAsync(Arg.Is("id")).ConfigureAwait(false);
+			.GetTokenAsync(Arg.Is("id"));
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Create_Token_Will_Pass_To_Source()
 	{
 		var fakeSourceTokenStore = Substitute.For<ITokenStore>();
@@ -86,10 +86,10 @@ public class MemoryCachedTokenStoreTests
 		await fakeSourceTokenStore.Received(1)
 				.CreateTokenAsync(Arg.Is<Token>(t => t.Id == token.Id
 					&& t.PlayerCode == token.PlayerCode
-					&& t.CreatedOn == token.CreatedOn)).ConfigureAwait(false);
+					&& t.CreatedOn == token.CreatedOn));
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Delete_Token()
 	{
 		var fakeSourceTokenStore = Substitute.For<ITokenStore>();
@@ -105,13 +105,16 @@ public class MemoryCachedTokenStoreTests
 		_ = entry.SetValue(value: null);
 		entry.Dispose();
 
-		Assert.IsTrue(fakeMemoryCache.TryGetValue(key, out _));
+		Assert.True(fakeMemoryCache.TryGetValue(key, out _));
 
 		await sut.DeleteTokenAsync("test");
 
-		await fakeSourceTokenStore.Received(1)
-			.DeleteTokenAsync(Arg.Is("test")).ConfigureAwait(false);
+		await fakeSourceTokenStore
+			.Received(1)
+			.DeleteTokenAsync(
+			Arg.Is("test"),
+			Arg.Any<CancellationToken>());
 
-		Assert.IsFalse(fakeMemoryCache.TryGetValue(key, out _));
+		Assert.False(fakeMemoryCache.TryGetValue(key, out _));
 	}
 }

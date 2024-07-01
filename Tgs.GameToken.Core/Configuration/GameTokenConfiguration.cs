@@ -2,16 +2,11 @@
 
 namespace Tgs.GameToken.Configuration;
 
-public class GameTokenConfiguration
+public class GameTokenConfiguration(IServiceCollection services)
 {
-	public IServiceCollection Services { get; }
+	public IServiceCollection Services { get; } = services ?? throw new ArgumentNullException(nameof(services));
 
 	internal Type SourceStoreType { get; private set; } = typeof(NoopTokenStore);
-
-	public GameTokenConfiguration(IServiceCollection services)
-	{
-		Services = services ?? throw new ArgumentNullException(nameof(services));
-	}
 
 	public GameTokenConfiguration Configure(Action<GameTokenOptions, IServiceProvider> configure)
 	{
@@ -38,7 +33,7 @@ public class GameTokenConfiguration
 
 			return ActivatorUtilities.CreateInstance<TTokenStore>(
 				sp,
-				parameters.ToArray());
+				[.. parameters]);
 		});
 
 		SourceStoreType = typeof(TTokenStore);

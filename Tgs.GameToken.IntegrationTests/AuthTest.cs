@@ -1,20 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ExpectedObjects;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using Tgs.GameToken.ApplicationServices;
 using Tgs.GameToken.Client;
 using Tgs.GameToken.MessageQueue;
-using Tgs.MessageQueue;
+using Tgs.ServiceUtility;
+using Valhalla.MessageQueue;
+using Xunit;
 
 namespace Tgs.GameToken.IntegrationTests;
 
-[TestClass]
 public class AuthTest
 {
-	[TestMethod]
+	[Fact]
 	public async Task Create_Auth()
 	{
 		await using var web = new TestGameTokenApplication(hostBuilder =>
@@ -31,10 +34,10 @@ public class AuthTest
 
 		var actual = await sut.CreateAuthAsync("player1", "test", default);
 
-		Assert.IsFalse(string.IsNullOrWhiteSpace(actual));
+		Assert.False(string.IsNullOrWhiteSpace(actual));
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Check_Auth()
 	{
 		var auth = "test";
@@ -59,10 +62,10 @@ public class AuthTest
 
 		var actual = await sut.CheckAuthValidAsync(auth, default);
 
-		Assert.IsTrue(actual);
+		Assert.True(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Check_Invalid_Auth()
 	{
 		var auth = "test";
@@ -87,10 +90,10 @@ public class AuthTest
 
 		var actual = await sut.CheckTokenValidAsync(auth, default);
 
-		Assert.IsFalse(actual);
+		Assert.False(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Get_Auth()
 	{
 		var auth = "test";
@@ -124,7 +127,7 @@ public class AuthTest
 		expected.ToExpectedObject().ShouldMatch(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Revoke_Auth()
 	{
 		var auth = "test";
@@ -141,20 +144,21 @@ public class AuthTest
 
 					_ = fakeMessageSender.PublishAsync(
 						Arg.Is("tgs.gametoken.auth.revoke"),
-						Arg.Any<ReadOnlyMemory<byte>>(),
+						Arg.Any<Protos.RevokeRequest>(),
 						Arg.Any<CancellationToken>())
 						.Returns(callInfo =>
 						{
-							var data = callInfo.Arg<ReadOnlyMemory<byte>>();
+							var data = callInfo.Arg<Protos.RevokeRequest>();
 							var ct = callInfo.Arg<CancellationToken>();
 
 							var handler = ActivatorUtilities.CreateInstance<RevokeAuthHandler>(sp);
 
-							return handler.HandleAsync(data, ct);
+							return handler.HandleAsync("tgs.gametoken.auth.revoke", data, null, cancellationToken: ct);
 						});
 
 					return fakeMessageSender;
 				});
+
 			}));
 
 		var httpClient = web.CreateClient();
@@ -167,6 +171,6 @@ public class AuthTest
 		await sut.RevokeAuthAsync(auth, cts.Token);
 
 		_ = fakeAuthStore.Received(1)
-			.DeleteAuthAsync(Arg.Is(auth));
+			.DeleteAuthAsync(Arg.Is(auth), Arg.Any<CancellationToken>());
 	}
 }

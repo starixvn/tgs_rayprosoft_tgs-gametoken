@@ -1,28 +1,26 @@
 ﻿using Tgs.GameToken.ApplicationServices;
 using Tgs.GameToken.Protos;
-using Tgs.MessageQueue;
 using Tgs.ServiceUtility;
+using Valhalla.MessageQueue;
 
 namespace Tgs.GameToken.MessageQueue;
 
-public class RevokeAuthHandler : IMessageHandler
+internal class RevokeAuthHandler(
+	ILogger<RevokeAuthHandler> logger,
+	ICommandService<DeleteAuthCommand> deleteTokenService) : IMessageHandler<RevokeRequest>
 {
-	private readonly ICommandService<DeleteAuthCommand> _deleteTokenService;
-
-	public RevokeAuthHandler(ICommandService<DeleteAuthCommand> deleteTokenService)
+	public ValueTask HandleAsync(string subject, RevokeRequest data, IEnumerable<MessageHeaderValue>? headerValues, CancellationToken cancellationToken = default)
 	{
-		_deleteTokenService = deleteTokenService ?? throw new ArgumentNullException(nameof(deleteTokenService));
-	}
+		logger.LogInformation("LogOn:{logOn} Subject:{subject} Information Request:{message}",
+			DateTime.Now.ToString("o"),
+			subject,
+			new
+			{
+				data.Id
+			});
 
-	public ValueTask HandleAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
-	{
-		var request = RevokeRequest.Parser.ParseFrom(data.Span);
-
-		var command = new DeleteAuthCommand(request.Id);
-
-		return _deleteTokenService
-				.ExecuteAsync(
-					command: command,
-					cancellationToken: cancellationToken);
+		return deleteTokenService.ExecuteAsync(
+			command: new(data.Id),
+			cancellationToken: cancellationToken);
 	}
 }

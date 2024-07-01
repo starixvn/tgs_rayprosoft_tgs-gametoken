@@ -1,31 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<Version>0.0.3</Version>
+		<Version>1.0.0</Version>
 		<Authors>Raypro</Authors>
-		<Description>Tgs GameToken Client</Description>
 		<PackageProjectUrl>https://gitlab.com/rayprosoft/tgs-gametoken</PackageProjectUrl>
 		<RepositoryUrl>https://gitlab.com/rayprosoft/tgs-gametoken.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<PackageTags>tgs-gametoken</PackageTags>
+		<RootNamespace>Tgs.GameToken.Client</RootNamespace>
+		<PackageId>Tgs.GameToken.Client</PackageId>
+		<Title>Tgs.GameToken.Client</Title>
+		<Description>Tgs.GameToken.Client</Description>
+		<PackageTags>Tgs GameToken Client</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Remove="Protos\**" />
-		<EmbeddedResource Remove="Protos\**" />
-		<None Remove="Protos\**" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.6.40">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.10.48">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

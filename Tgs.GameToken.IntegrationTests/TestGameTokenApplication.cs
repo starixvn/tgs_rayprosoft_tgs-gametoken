@@ -8,15 +8,9 @@ using OpenTelemetry.Exporter;
 
 namespace Tgs.GameToken.IntegrationTests;
 
-internal class TestGameTokenApplication : WebApplicationFactory<Program>
+internal class TestGameTokenApplication(
+	Action<IWebHostBuilder>? webHostConfigure = null) : WebApplicationFactory<Program>
 {
-	private readonly Action<IWebHostBuilder>? _webHostConfigure;
-
-	public TestGameTokenApplication(Action<IWebHostBuilder>? webHostConfigure = null)
-	{
-		_webHostConfigure = webHostConfigure;
-	}
-
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
 		_ = builder.ConfigureServices(services =>
@@ -28,6 +22,6 @@ internal class TestGameTokenApplication : WebApplicationFactory<Program>
 						exporterOptions => exporterOptions.TimeoutMilliseconds = 0))
 				.AddSingleton(Substitute.For<ITokenStore>()));
 
-		_webHostConfigure?.Invoke(builder);
+		webHostConfigure?.Invoke(builder);
 	}
 }

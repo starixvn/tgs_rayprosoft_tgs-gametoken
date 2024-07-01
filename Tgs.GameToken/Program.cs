@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OpenTelemetry.Instrumentation.AspNetCore;
+using NATS.Client.Core;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Tgs.GameToken;
 using Tgs.GameToken.MessageQueue;
+using Tgs.MessageQueue.Nats.Serializers;
+
+var filterInstrumentations = new[] { "html", "ico", "png", "jpg" };
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,9 +38,10 @@ builder.Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-	var xmlFileNames = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml");
-	foreach (var xmlFileName in xmlFileNames)
+	foreach (var xmlFileName in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml"))
+	{
 		c.IncludeXmlComments(xmlFileName);
+	}
 });
 
 builder.Services
@@ -60,17 +64,20 @@ builder.Services
 		serviceProvider => serviceProvider.GetRequiredService<RedisConnectionManager>().Database)
 		.SetMongoDbTokenStore(sp => sp.GetRequiredService<MongoConnectionManager>().Database));
 
+builder.Services.AddHostedService<InitStartup>();
+
 builder.Services
+	.AddKeyedSingleton("Nats", (sp, _) => new NatsConnection(NatsOpts.Default with
+	{
+		Url = builder.Configuration.GetConnectionString("Nats")!,
+		SerializerRegistry = TgsNatsSerializerRegistration.Default
+	}))
 	.AddMessageQueue()
-	.AddNatsMessageQueue(natsConfig =>
-	natsConfig
-		.ConfigQueueOptions((options, sp) =>
-		{
-			var config = sp.GetRequiredService<IConfiguration>();
-			options.Url = config.GetConnectionString("Nats")!;
-		})
-		.AddHandler<RevokeTokenHandler>("tgs.gametoken.token.revoke")
-		.AddHandler<RevokeAuthHandler>("tgs.gametoken.auth.revoke"))
+	.AddNatsMessageQueue(config => config
+		.ConfigureResolveConnection(sp => sp.GetRequiredKeyedService<NatsConnection>("Nats"))
+		.AddHandler<RevokeTokenHandler>("tgs.gametoken.token.revoke", "tgs.gametoken.token.revoke")
+		.AddHandler<RevokeAuthHandler>("tgs.gametoken.auth.revoke", "tgs.gametoken.auth.revoke"))
+	 .ClearAllExchanges()
 	.AddNatsGlobPatternExchange("*");
 
 builder.Services
@@ -80,7 +87,15 @@ builder.Services
 			.AddEnvironmentVariableDetector())
 		.AddSource("Tgs.*")
 		.AddSource("TGS.*")
-		.AddAspNetCoreInstrumentation()
+		.AddSource("Valhalla.*")
+		.AddAspNetCoreInstrumentation(options => options.Filter =
+			httpContext => !httpContext.Request.Path.HasValue
+			|| !httpContext.Request.Path.StartsWithSegments("/swagger")
+			&& !httpContext.Request.Path.StartsWithSegments("/healthz")
+			&& !httpContext.Request.Path.StartsWithSegments("/profiler/")
+			&& !httpContext.Request.Path.StartsWithSegments("/hangfire")
+			&& !httpContext.Request.Path.StartsWithSegments("/metrics")
+			&& !filterInstrumentations.Any(ext => httpContext.Request.Path.Value.EndsWith($".{ext}")))
 		.AddHttpClientInstrumentation()
 		.AddGrpcClientInstrumentation()
 		.AddGrpcCoreInstrumentation()
@@ -88,20 +103,13 @@ builder.Services
 		.AddOtlpExporter())
 	.WithMetrics(meterBuiler => meterBuiler
 	.SetResourceBuilder(ResourceBuilder.CreateDefault()
-	.AddEnvironmentVariableDetector())
-	.AddRuntimeInstrumentation()
-	.AddAspNetCoreInstrumentation()
-	.AddOtlpExporter())
+		.AddEnvironmentVariableDetector())
+		.AddRuntimeInstrumentation()
+		.AddAspNetCoreInstrumentation()
+		.AddOtlpExporter())
 	.Services
-	.Configure<AspNetCoreInstrumentationOptions>(options => options.Filter =
-		httpContext => !httpContext.Request.Path.HasValue
-			|| !httpContext.Request.Path.StartsWithSegments("/swagger")
-			&& !httpContext.Request.Path.StartsWithSegments("/healthz")
-			&& !httpContext.Request.Path.StartsWithSegments("/profiler/")
-			&& !httpContext.Request.Path.StartsWithSegments("/hangfire")
-			&& !httpContext.Request.Path.StartsWithSegments("/metrics")
-			&& !new[] { "html", "ico", "png", "jpg" }.Any(
-				ext => httpContext.Request.Path.Value.EndsWith($".{ext}")));
+	.AddInterceptionService()
+	.AddServiceUtiltiyInterceptors();
 
 builder.Services.AddHealthChecks();
 

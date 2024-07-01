@@ -4,7 +4,10 @@ using StackExchange.Redis;
 
 namespace Tgs.GameToken;
 
-internal class AuthStore : IAuthStore
+internal class AuthStore(
+	ILogger<AuthStore> logger,
+	IDatabase database,
+	TimeSpan expiry) : IAuthStore
 {
 	private static readonly JsonSerializerOptions _SerializerOptions = new()
 	{
@@ -12,56 +15,41 @@ internal class AuthStore : IAuthStore
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 	};
 
-	private readonly IDatabase _database;
-	private readonly TimeSpan _expiry;
-	private readonly ILogger<AuthStore> _logger;
-
-	public AuthStore(
-		ILogger<AuthStore> logger,
-		IDatabase database,
-		TimeSpan expiry)
-	{
-		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
-		_database = database ?? throw new ArgumentNullException(nameof(database));
-		_expiry = expiry;
-	}
-
-	public async ValueTask CreateAuthAsync(Auth auth)
+	public async ValueTask CreateAuthAsync(Auth auth, CancellationToken cancellationToken = default)
 	{
 		var key = GetKey(auth.Id);
 
 		var json = JsonSerializer.Serialize(auth, _SerializerOptions);
 
-		_ = await _database
+		_ = await database
 			.StringSetAsync(
 			key: key,
 			value: json,
-			expiry: _expiry,
+			expiry: expiry,
 			when: When.NotExists)
 			.ConfigureAwait(false);
 	}
 
-	public async ValueTask DeleteAuthAsync(string id)
+	public async ValueTask DeleteAuthAsync(string id, CancellationToken cancellationToken = default)
 	{
 		var key = GetKey(id);
 
-		_ = await _database
+		_ = await database
 			.KeyDeleteAsync(
 			key: key,
-			flags: CommandFlags.FireAndForget
-			)
+			flags: CommandFlags.FireAndForget)
 			.ConfigureAwait(false);
 	}
 
-	public async ValueTask<GameAuthInfo?> GetAuthAsync(string id)
+	public async ValueTask<GameAuthInfo?> GetAuthAsync(string id, CancellationToken cancellationToken = default)
 	{
 		var key = GetKey(id);
 
-		var json = await _database
+		var json = await database
 			.StringGetAsync(
 			key: key)
 			.ConfigureAwait(false);
-		_logger.LogInformation("Redis token: {json}", json);
+		logger.LogInformation("Redis token: {json}", json);
 		if (!json.HasValue)
 		{
 			return null;

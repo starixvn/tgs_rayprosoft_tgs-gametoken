@@ -3,18 +3,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using ExpectedObjects;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using Tgs.GameToken.Client;
 using Tgs.GameToken.MessageQueue;
-using Tgs.MessageQueue;
+using Valhalla.MessageQueue;
+using Xunit;
 
 namespace Tgs.GameToken.IntegrationTests;
 
-[TestClass]
 public class TokenTests
 {
-	[TestMethod]
+	[Fact]
 	public async Task Create_Token()
 	{
 		await using var web = new TestGameTokenApplication();
@@ -25,10 +24,10 @@ public class TokenTests
 
 		var actual = await sut.CreateTokenAsync("player1", default);
 
-		Assert.IsFalse(string.IsNullOrWhiteSpace(actual));
+		Assert.False(string.IsNullOrWhiteSpace(actual));
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Check_Token()
 	{
 		var token = "test";
@@ -54,10 +53,10 @@ public class TokenTests
 
 		var actual = await sut.CheckTokenValidAsync(token, default);
 
-		Assert.IsTrue(actual);
+		Assert.True(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Check_Invalid_Token()
 	{
 		var token = "test";
@@ -83,10 +82,10 @@ public class TokenTests
 
 		var actual = await sut.CheckTokenValidAsync(token, default);
 
-		Assert.IsFalse(actual);
+		Assert.False(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Get_Token()
 	{
 		var token = "test";
@@ -122,7 +121,7 @@ public class TokenTests
 		expected.ToExpectedObject().ShouldMatch(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Revoke_Token()
 	{
 		var token = "test";
@@ -139,16 +138,16 @@ public class TokenTests
 
 					_ = fakeMessageSender.PublishAsync(
 						Arg.Is("tgs.gametoken.token.revoke"),
-						Arg.Any<ReadOnlyMemory<byte>>(),
+						Arg.Any<Protos.RevokeRequest>(),
 						Arg.Any<CancellationToken>())
 						.Returns(callInfo =>
 						{
-							var data = callInfo.Arg<ReadOnlyMemory<byte>>();
+							var data = callInfo.Arg<Protos.RevokeRequest>();
 							var ct = callInfo.Arg<CancellationToken>();
 
 							var handler = ActivatorUtilities.CreateInstance<RevokeTokenHandler>(sp);
 
-							return handler.HandleAsync(data, ct);
+							return handler.HandleAsync("tgs.gametoken.token.revoke", data, null, cancellationToken: ct);
 						});
 
 					return fakeMessageSender;
@@ -165,6 +164,6 @@ public class TokenTests
 		await sut.RevokeTokenAsync(token, cts.Token);
 
 		_ = fakeTokenStore.Received(1)
-			.DeleteTokenAsync(Arg.Is(token));
+			.DeleteTokenAsync(Arg.Is(token), Arg.Any<CancellationToken>());
 	}
 }

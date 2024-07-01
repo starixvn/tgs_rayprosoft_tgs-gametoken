@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using Tgs.GameToken.ApplicationServices;
+using Xunit;
 
 namespace Tgs.GameToken.Core.UnitTests;
 
-[TestClass]
 public class TokenTests
 {
-	[TestMethod]
+	[Fact]
 	public async Task CreateToken()
 	{
 		var fakeTokenStore = Substitute.For<ITokenStore>();
@@ -26,10 +25,10 @@ public class TokenTests
 		await fakeTokenStore.Received(1)
 				.CreateTokenAsync(Arg.Is<Token>(token => token.PlayerCode == command.PlayerCode
 					&& token.CreatedOn >= before
-					&& token.CreatedOn <= after)).ConfigureAwait(false);
+					&& token.CreatedOn <= after));
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task GetToken()
 	{
 		var fakeTokenStore = Substitute.For<ITokenStore>();
@@ -47,10 +46,10 @@ public class TokenTests
 
 		var actual = await sut.GetAsync(query);
 
-		Assert.AreEqual("Player1", actual!.PlayerCode);
+		Assert.Equal("Player1", actual!.PlayerCode);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task GetToken_NotFound_Should_Return_Null()
 	{
 		var fakeTokenStore = Substitute.For<ITokenStore>();
@@ -61,10 +60,10 @@ public class TokenTests
 
 		var actual = await sut.GetAsync(query);
 
-		Assert.IsNull(actual);
+		Assert.Null(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task DeleteToken()
 	{
 		var fakeTokenStore = Substitute.For<ITokenStore>();
@@ -76,6 +75,6 @@ public class TokenTests
 		await sut.ExecuteAsync(command);
 
 		await fakeTokenStore.Received(1)
-			.DeleteTokenAsync(Arg.Is(command.Id)).ConfigureAwait(false);
+			.DeleteTokenAsync(Arg.Is(command.Id));
 	}
 }
