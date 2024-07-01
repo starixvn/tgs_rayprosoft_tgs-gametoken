@@ -64,7 +64,7 @@ builder.Services
 		serviceProvider => serviceProvider.GetRequiredService<RedisConnectionManager>().Database)
 		.SetMongoDbTokenStore(sp => sp.GetRequiredService<MongoConnectionManager>().Database));
 
-//builder.Services.AddHostedService<InitStartup>();
+builder.Services.AddHostedService<InitStartup>();
 
 builder.Services
 	.AddKeyedSingleton("Nats", (sp, _) => new NatsConnection(NatsOpts.Default with
