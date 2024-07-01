@@ -2,16 +2,15 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using StackExchange.Redis;
+using Xunit;
 
 namespace Tgs.GameToken.Core.UnitTests;
 
-[TestClass]
 public class RedisTokenStoreTests
 {
-	[TestMethod]
+	[Fact]
 	public async Task CreateToken_Will_StringSet_Value()
 	{
 		var fakeSourceTokenStore = Substitute.For<ITokenStore>();
@@ -38,7 +37,7 @@ public class RedisTokenStoreTests
 				Arg.Is(When.NotExists));
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Get_Valid_Token()
 	{
 		var fakeSourceTokenStore = Substitute.For<ITokenStore>();
@@ -51,15 +50,15 @@ public class RedisTokenStoreTests
 			NullLogger<RedisTokenStore>.Instance);
 
 		var token = new Token(
-			   "id",
-				 "Player1",
-				 DateTime.UtcNow);
+			Id: "id",
+			PlayerCode: "Player1",
+			CreatedOn: DateTime.UtcNow);
 
 		_ = fakeRedisDatabase
 			.StringGetAsync(Arg.Is<RedisKey>($"Tgs:GameToken:{token.Id}"), Arg.Any<CommandFlags>())
 			.Returns(JsonSerializer.Serialize(
 				token,
-				new JsonSerializerOptions
+				options: new JsonSerializerOptions
 				{
 					WriteIndented = false,
 					PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -67,11 +66,11 @@ public class RedisTokenStoreTests
 
 		var actual = await sut.GetTokenAsync("id");
 
-		Assert.IsNotNull(actual);
-		Assert.IsTrue(actual!.IsValid);
+		Assert.NotNull(actual);
+		Assert.True(actual!.IsValid);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Invaild_Token_Will_Return_Null()
 	{
 		var fakeSourceTokenStore = Substitute.For<ITokenStore>();
@@ -85,10 +84,10 @@ public class RedisTokenStoreTests
 
 		var actual = await sut.GetTokenAsync("id");
 
-		Assert.IsNull(actual);
+		Assert.Null(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task If_Redis_Value_Is_Empty_Will_Return_Null()
 	{
 		var fakeSourceTokenStore = Substitute.For<ITokenStore>();
@@ -105,10 +104,10 @@ public class RedisTokenStoreTests
 
 		var actual = await sut.GetTokenAsync("id");
 
-		Assert.IsNull(actual);
+		Assert.Null(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Delete_Token()
 	{
 		var fakeSourceTokenStore = Substitute.For<ITokenStore>();
@@ -123,9 +122,12 @@ public class RedisTokenStoreTests
 		await sut.DeleteTokenAsync("test");
 
 		await fakeSourceTokenStore.Received(1)
-			.DeleteTokenAsync(Arg.Is("test")).ConfigureAwait(false);
+			.DeleteTokenAsync(Arg.Is("test"));
 
-		_ = await fakeRedisDatabase.Received(1)
-			.KeyDeleteAsync(Arg.Is<RedisKey>("Tgs:GameToken:test")).ConfigureAwait(false);
+		_ = await fakeRedisDatabase
+			.Received(1)
+			.KeyDeleteAsync(
+			Arg.Is<RedisKey>("Tgs:GameToken:test"),
+			Arg.Is(CommandFlags.FireAndForget));
 	}
 }

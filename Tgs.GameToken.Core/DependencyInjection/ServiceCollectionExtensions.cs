@@ -20,9 +20,9 @@ public static class ServiceCollectionExtensions
 			{
 				var options = sp.GetRequiredService<IOptions<GameTokenOptions>>().Value;
 
-				return new object[] { TimeSpan.FromHours(1), options.RedisDatabaseResolver(sp) };
+				return [TimeSpan.FromHours(1), options.RedisDatabaseResolver(sp)];
 			})
-			.SetTokenStore<MemoryCachedTokenStore>(sp => new object[] { TimeSpan.FromMinutes(5) });
+			.SetTokenStore<MemoryCachedTokenStore>(sp => [TimeSpan.FromMinutes(5)]);
 		return services
 			.RegisterAllServiceUtilityTypes(Assembly.GetExecutingAssembly(), ServiceLifetime.Transient)
 			.AddSingleton<NoopTokenStore>()

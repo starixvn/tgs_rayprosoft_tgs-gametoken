@@ -1,12 +1,11 @@
 ﻿using System.Net.Mime;
-using Google.Protobuf;
 using Microsoft.AspNetCore.Mvc;
 using Tgs.GameToken.ApplicationServices;
 using Tgs.GameToken.Protos;
 using Tgs.GameToken.ViewModels;
-using Tgs.MessageQueue;
 using Tgs.ServiceUtility;
 using Tgs.WebApi.Toolkits;
+using Valhalla.MessageQueue;
 
 namespace Tgs.GameToken.Controllers;
 
@@ -85,8 +84,8 @@ public class AuthController : ControllerBase
 		};
 
 		return messageSender.PublishAsync(
-			"tgs.gametoken.auth.revoke",
-			request.ToByteArray(),
-			HttpContext.RequestAborted);
+			subject: "tgs.gametoken.auth.revoke",
+			data: request,
+			cancellationToken: HttpContext.RequestAborted);
 	}
 }

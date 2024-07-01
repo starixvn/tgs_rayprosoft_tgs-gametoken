@@ -1,12 +1,11 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace Tgs.GameToken.Core.UnitTests;
 
-[TestClass]
 public class GuidTests
 {
-	[TestMethod]
+	[Fact]
 	public void GuidConvertToToken()
 	{
 		var guid = Guid.Parse("94DFD7BE-C2E3-4960-BA45-88AF42635E81");
@@ -15,6 +14,6 @@ public class GuidTests
 
 		var actual = guid.ToString("N");
 
-		Assert.AreEqual(expected, actual);
+		Assert.Equal(expected, actual);
 	}
 }

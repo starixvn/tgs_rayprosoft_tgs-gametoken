@@ -1,9 +1,11 @@
-﻿using MongoDB.Bson;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Tgs.GameToken.Repositories;
+namespace Tgs.GameToken.Repositories.Models;
 
-internal class MongoToken
+[Table("game_tokens")]
+public record GameToken
 {
 	[BsonId]
 	public string Id { get; set; } = default!;
@@ -18,5 +20,10 @@ internal class MongoToken
 
 	[BsonElement("created_on")]
 	[BsonRepresentation(BsonType.String)]
-	public DateTime CreatedOn { get; set; }
+	public DateTime CreatedOn { get; set; } = default!;
+	/// <summary>
+	/// The expire on
+	/// </summary>
+	[BsonElement("expire_on")]
+	public DateTime ExpireOn { get; init; } = default!;
 }

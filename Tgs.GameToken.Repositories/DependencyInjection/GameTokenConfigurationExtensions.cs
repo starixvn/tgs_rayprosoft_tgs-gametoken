@@ -9,5 +9,5 @@ public static class GameTokenConfigurationExtensions
 	public static GameTokenConfiguration SetMongoDbTokenStore(
 		this GameTokenConfiguration configuration,
 		Func<IServiceProvider, IMongoDatabase> mongoDatabaseResolver)
-		=> configuration.SetTokenStore<MongoTokenStore>(sp => new[] { mongoDatabaseResolver(sp) });
+		=> configuration.SetTokenStore<MongoTokenStore>(sp => [mongoDatabaseResolver(sp)]);
 }

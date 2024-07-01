@@ -2,47 +2,50 @@
 
 namespace Tgs.GameToken;
 
-internal class MemoryCachedTokenStore : ITokenStore
+internal class MemoryCachedTokenStore(
+	ITokenStore sourceTokenStore,
+	TimeSpan expiry,
+	IMemoryCache memoryCache) : ITokenStore
 {
-	private readonly ITokenStore _sourceTokenStore;
-	private readonly TimeSpan _expiry;
-	private readonly IMemoryCache _memoryCache;
+	public ValueTask CreateTokenAsync(Token token, CancellationToken cancellationToken = default)
+		=> sourceTokenStore.CreateTokenAsync(token, cancellationToken);
 
-	public MemoryCachedTokenStore(ITokenStore sourceTokenStore, TimeSpan expiry, IMemoryCache memoryCache)
+	public async ValueTask<GameTokenInfo?> GetTokenAsync(string id, CancellationToken cancellationToken = default)
 	{
-		_sourceTokenStore = sourceTokenStore ?? throw new ArgumentNullException(nameof(sourceTokenStore));
-		_expiry = expiry;
-		_memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
-	}
+		var key = GetKey(id);
 
-	public ValueTask CreateTokenAsync(Token token)
-		=> _sourceTokenStore.CreateTokenAsync(token);
-
-	public async ValueTask<GameTokenInfo?> GetTokenAsync(string id)
-	{
-		var key = $"Tgs:GameToken:{id}";
-
-		var tokenInfo = await _memoryCache.GetOrCreateAsync(key, async cacheEntry =>
+		var tokenInfo = await memoryCache.GetOrCreateAsync(key, async cacheEntry =>
 		{
-			var token = await _sourceTokenStore.GetTokenAsync(id).ConfigureAwait(false);
+			var token = await sourceTokenStore.GetTokenAsync(id).ConfigureAwait(false);
 
-			_ = cacheEntry.SetAbsoluteExpiration(_expiry);
+			_ = cacheEntry.SetAbsoluteExpiration(expiry);
 
 			return token;
 		}).ConfigureAwait(false);
 
 		if (tokenInfo is not null && tokenInfo.IsValid)
-			_ = await _sourceTokenStore.GetTokenAsync(id).ConfigureAwait(false);
+			_ = await sourceTokenStore.GetTokenAsync(
+				id: id,
+				cancellationToken: cancellationToken)
+				.ConfigureAwait(false);
 
 		return tokenInfo;
 	}
 
-	public async ValueTask DeleteTokenAsync(string id)
+	public async ValueTask DeleteTokenAsync(string id, CancellationToken cancellationToken = default)
 	{
-		var key = $"Tgs:GameToken:{id}";
+		var key = GetKey(id);
 
-		await _sourceTokenStore.DeleteTokenAsync(id).ConfigureAwait(false);
+		await sourceTokenStore.DeleteTokenAsync(
+			id: id,
+			cancellationToken: cancellationToken)
+			.ConfigureAwait(false);
 
-		_memoryCache.Remove(key);
+		memoryCache.Remove(key);
 	}
+
+	public ValueTask InitializationAsync(CancellationToken cancellationToken = default) => sourceTokenStore.InitializationAsync(cancellationToken);
+
+	private static string GetKey(string id)
+		=> string.Concat("Tgs:GameToken:", id);
 }

@@ -2,16 +2,15 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using StackExchange.Redis;
+using Xunit;
 
 namespace Tgs.GameToken.Core.UnitTests;
 
-[TestClass]
 public class AuthStoreTest
 {
-	[TestMethod]
+	[Fact]
 	public async Task CreateToken_Will_StringSet_Value()
 	{
 		var fakeRedisDatabase = Substitute.For<IDatabase>();
@@ -36,7 +35,7 @@ public class AuthStoreTest
 				Arg.Is(When.NotExists));
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Get_Valid_Auth()
 	{
 		var fakeRedisDatabase = Substitute.For<IDatabase>();
@@ -55,7 +54,7 @@ public class AuthStoreTest
 			.StringGetAsync(Arg.Is<RedisKey>($"Tgs:GameToken:Auth:{auth.Id}".ToLower()), Arg.Any<CommandFlags>())
 			.Returns(JsonSerializer.Serialize(
 				auth,
-				new JsonSerializerOptions
+				options: new JsonSerializerOptions
 				{
 					WriteIndented = false,
 					PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -63,10 +62,10 @@ public class AuthStoreTest
 
 		var actual = await sut.GetAuthAsync("id");
 
-		Assert.IsNotNull(actual);
+		Assert.NotNull(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Invaild_Token_Will_Return_Null()
 	{
 		var fakeRedisDatabase = Substitute.For<IDatabase>();
@@ -78,10 +77,10 @@ public class AuthStoreTest
 
 		var actual = await sut.GetAuthAsync("id");
 
-		Assert.IsNull(actual);
+		Assert.Null(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task If_Redis_Value_Is_Empty_Will_Return_Null()
 	{
 		var fakeRedisDatabase = Substitute.For<IDatabase>();
@@ -97,10 +96,10 @@ public class AuthStoreTest
 
 		var actual = await sut.GetAuthAsync("id");
 
-		Assert.IsNull(actual);
+		Assert.Null(actual);
 	}
 
-	[TestMethod]
+	[Fact]
 	public async Task Delete_Token()
 	{
 		var fakeRedisDatabase = Substitute.For<IDatabase>();
@@ -115,6 +114,6 @@ public class AuthStoreTest
 		_ = await fakeRedisDatabase.Received(1)
 			.KeyDeleteAsync(
 			Arg.Is<RedisKey>($"Tgs:GameToken:Auth:test".ToLower()),
-			Arg.Is<CommandFlags>(CommandFlags.FireAndForget)).ConfigureAwait(false);
+			Arg.Is<CommandFlags>(CommandFlags.FireAndForget));
 	}
 }
