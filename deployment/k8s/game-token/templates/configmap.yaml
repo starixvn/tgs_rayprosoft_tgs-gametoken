@@ -9,7 +9,8 @@ data:
     {
       "Logging": {
         "LogLevel": {
-          "Default": "Warning"
+          "Default": "Warning",
+          "Tgs.GameToken.MessageQueue": "Information"
         }
       }
     }
