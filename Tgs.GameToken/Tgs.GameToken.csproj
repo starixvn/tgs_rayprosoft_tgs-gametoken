@@ -3,12 +3,6 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<RootNamespace>Tgs.GameToken</RootNamespace>
-		<UserSecretsId>0fe75563-481b-4d3a-a835-989d3c8b9716</UserSecretsId>
-		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-	</PropertyGroup>
-
-	<PropertyGroup>
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 		<NoWarn>$(NoWarn);1591;0063</NoWarn>
 	</PropertyGroup>
@@ -20,13 +14,13 @@
 	<ItemGroup>
 		<PackageReference Include="ExpectedObjects" Version="3.5.4" />
 		<PackageReference Include="FluentdForward.OpenTelemetry.MessagePack" Version="0.3.8" />
-		<PackageReference Include="Google.Protobuf" Version="3.27.2" />
-		<PackageReference Include="Grpc.Tools" Version="2.64.0">
+		<PackageReference Include="Google.Protobuf" Version="3.28.2" />
+		<PackageReference Include="Grpc.Tools" Version="2.66.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.10.48">
+		<PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.11.20">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
@@ -43,8 +37,8 @@
 		<PackageReference Include="PhoenixToolkits.MessageQueue.Direct" Version="2.2.0" />
 		<PackageReference Include="PhoenixToolkits.MessageQueue.Nats" Version="2.2.0" />
 		<PackageReference Include="PhoenixToolkits.Protobuf.ExtendTypes" Version="0.0.7" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-		<PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="6.6.2" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.1" />
+		<PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="6.8.1" />
 		<PackageReference Include="Tgs.Interceptors" Version="0.2.1" />
 		<PackageReference Include="Tgs.MessageQueue.Nats.Serializers" Version="0.0.2" />
 		<PackageReference Include="Tgs.WebApi.Toolkits" Version="0.4.0" />

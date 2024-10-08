@@ -158,7 +158,6 @@ public class AuthTest
 
 					return fakeMessageSender;
 				});
-
 			}));
 
 		var httpClient = web.CreateClient();
